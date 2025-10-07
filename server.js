@@ -1,0 +1,38 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import db from './Database/db.js';
+import * as models from './Model/index.js';
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const port = process.env.SERVER_PORT || 3000;
+
+try {
+    await db.authenticate();
+    console.log("DB Connection : Success");
+
+    await db.sync({force:true,alter:true})
+        .then(() => {
+            console.log("Tables are Ready")
+            app.listen(port, (err) => {
+                if (err) {
+                    console.log("Server Start : Failure");
+                    console.log(err.message);
+                } else {
+                    console.log("Server Start : Success");
+                }
+            });
+        })
+        .catch(err => {
+            console.log("Error syncing DB");
+            console.log(err.message);
+        });
+} catch (error) {
+    console.log("DB Connection : Failure");
+    console.log(error.message);
+}
