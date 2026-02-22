@@ -72,7 +72,7 @@ StationSchedule.belongsTo(Station, { foreignKey: 'stationId' });
 Schedule.hasMany(StationSchedule, { foreignKey: 'scheduleId' });
 StationSchedule.belongsTo(Schedule, { foreignKey: 'scheduleId' });
 
-export {
+export default{
   Admin,
   User,
   PickupPerson,

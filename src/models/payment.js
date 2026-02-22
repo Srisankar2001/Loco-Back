@@ -1,27 +1,31 @@
 import { DataTypes } from 'sequelize';
-import db from '../Database/db.js';
+import db from '../config/db.js';
 
-const Station = db.define('Station', {
+const Payment = db.define('Payment', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
-  name: {
+  amount: {
+    type: DataTypes.DOUBLE,
+    allowNull: false
+  },
+  method: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  locationLongitude: {
+  status: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  locationLatitude: {
-    type: DataTypes.STRING,
+  paidDate: {
+    type: DataTypes.DATE,
     allowNull: false
   }
 }, {
-  tableName: 'station',
-  timestamps: false
+  tableName: 'payment',
+  timestamps: true
 });
 
-export default Station;
+export default Payment;

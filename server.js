@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import db from './Database/db.js';
-import * as models from './Model/index.js';
+import model from './src/models/index.js';
+import db from './src/config/db.js';
 
 dotenv.config();
 
