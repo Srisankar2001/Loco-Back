@@ -32,7 +32,33 @@ const DeliveryPerson = db.define('DeliveryPerson', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
-    }
+    },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    verifyToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    verifyTokenExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordTokenExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
 }, {
     tableName: 'delivery_person',
     timestamps: true

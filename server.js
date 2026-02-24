@@ -4,13 +4,19 @@ import dotenv from 'dotenv';
 import model from './src/models/index.js';
 import db from './src/config/db.js';
 
+import adminRouter from './src/routes/adminRoute.js';
+import userRouter from './src/routes/userRoute.js';
+
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const port = process.env.SERVER_PORT || 3000;
+app.use('/admin',adminRouter)
+app.use('/user',userRouter)
+
+const port = process.env.SERVER_PORT || 3001;
 
 try {
     await db.authenticate();
