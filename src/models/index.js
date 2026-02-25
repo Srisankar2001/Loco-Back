@@ -14,6 +14,9 @@ import Schedule from './schedule.js';
 import RouteStation from './routeStation.js';
 import StationSchedule from './stationSchedule.js';
 import Payment from './payment.js';
+import PickupPersonDocument from './pickupPersonDocument.js';
+import DeliveryPersonDocument from './DeliveryPersonDocument.js';
+import RestaurantDocument from './restaurantDocument.js';
 
 Admin.hasMany(User, { foreignKey: 'adminId' });
 User.belongsTo(Admin, { foreignKey: 'adminId' });
@@ -51,8 +54,17 @@ Restaurant.hasMany(Review, { foreignKey: 'restaurantId' });
 PickupPerson.hasMany(Order, { foreignKey: 'pickupPersonId' });
 Order.belongsTo(PickupPerson, { foreignKey: 'pickupPersonId' });
 
+PickupPerson.hasMany(PickupPersonDocument, { foreignKey: 'pickupPersonId' });
+PickupPersonDocument.belongsTo(PickupPerson, { foreignKey: 'pickupPersonId' });
+
 DeliveryPerson.hasMany(Order, { foreignKey: 'deliveryPersonId' });
 Order.belongsTo(DeliveryPerson, { foreignKey: 'deliveryPersonId' });
+
+DeliveryPerson.hasMany(DeliveryPersonDocument, { foreignKey: 'deliveryPersonId' });
+DeliveryPersonDocument.belongsTo(DeliveryPerson, { foreignKey: 'deliveryPersonId' });
+
+Restaurant.hasMany(RestaurantDocument, { foreignKey: 'restaurantId' });
+RestaurantDocument.belongsTo(Restaurant, { foreignKey: 'restaurantId' });
 
 Order.belongsTo(Station, { as: 'station', foreignKey: 'stationId' });
 Order.belongsTo(Train, { foreignKey: 'trainId' });
@@ -88,5 +100,8 @@ export default{
   Schedule,
   RouteStation,
   StationSchedule,
-  Payment
+  Payment,
+  DeliveryPersonDocument,
+  PickupPersonDocument,
+  RestaurantDocument
 };

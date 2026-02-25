@@ -2,7 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import User from "../models/user.js";
+import model from "../models/index.js";
 import {
   successResponse,
   clientErrorResponse,
@@ -11,6 +11,8 @@ import {
 import { isTokenValid } from "../utils/tokenUtil.js";
 import { ROLE } from "../enum/Role.js";
 import { sendResetMailUser, sendVerifyMailUser } from "../config/mail.js";
+
+const User = model.User
 
 export const registerUser = async (req, res) => {
   try {
@@ -36,7 +38,7 @@ export const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const verifyToken = crypto.randomBytes(32).toString("hex");
+    const verifyToken = crypto.randomBytes(8).toString("hex");
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
@@ -106,7 +108,7 @@ export const loginUser = async (req, res) => {
         );
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res
@@ -202,7 +204,7 @@ export const sendVerifyTokenUser = async (req, res) => {
         );
     }
 
-    const verifyToken = crypto.randomBytes(32).toString("hex");
+    const verifyToken = crypto.randomBytes(8).toString("hex");
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
@@ -250,7 +252,7 @@ export const resetPasswordUser = async (req, res) => {
       return res.status(401).json(clientErrorResponse("Invalid reset token."));
     }
 
-    if (!isTokenValid(admin.resetPasswordTokenExpires)) {
+    if (!isTokenValid(user.resetPasswordTokenExpires)) {
       return res
         .status(410)
         .json(clientErrorResponse("Reset token has expired."));
@@ -302,7 +304,7 @@ export const sendResetPasswordTokenUser = async (req, res) => {
         );
     }
 
-    const resetPasswordToken = crypto.randomBytes(32).toString("hex");
+    const resetPasswordToken = crypto.randomBytes(8).toString("hex");
 
     const expiresIn = Number(process.env.RESET_TOKEN_EXPIRES_IN) || 3600000;
 

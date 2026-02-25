@@ -1,41 +1,49 @@
-import { DataTypes } from 'sequelize';
-import db from '../config/db.js';
+import { DataTypes } from "sequelize";
+import db from "../config/db.js";
+import { STATUS } from "../enum/Status.js";
 
-const Restaurant = db.define('Restaurant', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  image: {
-    type: DataTypes.STRING
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  phoneNumber: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  locationLongitude: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  locationLatitude: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  isVerified: {
+const Restaurant = db.define(
+  "Restaurant",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    locationLongitude: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    locationLatitude: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
@@ -61,9 +69,20 @@ const Restaurant = db.define('Restaurant', {
       allowNull: false,
       defaultValue: false,
     },
-}, {
-  tableName: 'restaurant',
-  timestamps: true
-});
+    status: {
+      type: DataTypes.ENUM(...Object.values(STATUS)),
+      allowNull: false,
+      defaultValue: STATUS.PENDING,
+    },
+    reason: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
+    tableName: "restaurant",
+    timestamps: true,
+  },
+);
 
 export default Restaurant;

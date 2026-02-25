@@ -10,14 +10,25 @@ import {
 } from "../dto/response.js";
 import { isTokenValid } from "../utils/tokenUtil.js";
 import { ROLE } from "../enum/Role.js";
-import { sendResetMailAdmin, sendVerifyMailAdmin } from "../config/mail.js";
+import {
+  sendResetMailRestaurant,
+  sendVerifyMailRestaurant,
+} from "../config/mail.js";
+import { STATUS } from "../enum/Status.js";
+import { DOCUMENT } from "../enum/Document.js";
 
-const Admin = model.Admin
-export const registerAdmin = async (req, res) => {
+const Restaurant = model.Restaurant;
+const RestaurantDocument = model.RestaurantDocument;
+
+export const registerRestaurant = async (req, res) => {
   try {
-    const { firstname, lastname, email, phoneNumber, password } = req.body;
+    const { name, address, email, phoneNumber, password } = req.body;
+    const image = req.files?.image?.[0];
+    const userPicture = req.files?.userPicture?.[0];
+    const userDocument = req.files?.userDocument?.[0];
+    const restaurantDocument = req.files?.restaurantDocument?.[0];
 
-    if (!firstname || !lastname || !email || !phoneNumber || !password) {
+    if (!name || !address || !email || !phoneNumber || !password) {
       return res
         .status(400)
         .json(clientErrorResponse("All fields are required."));
@@ -25,11 +36,11 @@ export const registerAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const existingAdmin = await Admin.findOne({
+    const existingRestaurant = await Restaurant.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (existingAdmin) {
+    if (existingRestaurant) {
       return res
         .status(409)
         .json(clientErrorResponse("Email is already registered."));
@@ -41,19 +52,39 @@ export const registerAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
-    await Admin.create({
-      firstname,
-      lastname,
+    const restaurant = await Restaurant.create({
+      name: name,
+      address: address,
+      image: image,
       email: normalizedEmail,
       phoneNumber,
       password: hashedPassword,
       verifyToken,
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
-      isActive: true
+      isActive: false,
+      status: STATUS.PENDING,
     });
 
-    sendVerifyMailAdmin(normalizedEmail,verifyToken)
+    await RestaurantDocument.bulkCreate([
+      {
+        restaurant: restaurant.id,
+        type: DOCUMENT.USER_PICTURE,
+        path: userPicture,
+      },
+      {
+        restaurant: restaurant.id,
+        type: DOCUMENT.USER_DOCUMENT,
+        path: userDocument,
+      },
+      {
+        restaurant: restaurant.id,
+        type: DOCUMENT.RESTAURANT_DOCUMENT,
+        path: restaurantDocument,
+      },
+    ]);
+
+    sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
     return res
       .status(201)
@@ -69,7 +100,7 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
-export const loginAdmin = async (req, res) => {
+export const loginRestaurant = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -81,17 +112,17 @@ export const loginAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const restaurant = await Restaurant.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin) {
+    if (!restaurant) {
       return res
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
     }
 
-    if (!admin.isVerified) {
+    if (!restaurant.isVerified) {
       return res
         .status(403)
         .json(
@@ -99,15 +130,37 @@ export const loginAdmin = async (req, res) => {
         );
     }
 
-    if (!admin.isActive) {
+    if (restaurant.status == STATUS.PENDING) {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account is blocked. Please contact the administrator."),
+          clientErrorResponse(
+            "Your account is pending admin verification. Please wait for approval.",
+          ),
         );
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    if (restaurant.status == STATUS.REJECTED) {
+      return res
+        .status(403)
+        .json(
+          clientErrorResponse(
+            "Your account verification was rejected by the administrator.",
+          ),
+        );
+    }
+
+    if (!restaurant.isActive) {
+      return res
+        .status(403)
+        .json(
+          clientErrorResponse(
+            "Your account is blocked. Please contact the administrator.",
+          ),
+        );
+    }
+
+    const isMatch = await bcrypt.compare(password, restaurant.password);
 
     if (!isMatch) {
       return res
@@ -116,22 +169,20 @@ export const loginAdmin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: admin.id, role: ROLE.ADMIN },
-      process.env.JWT_SECRET_ADMIN,
+      { id: restaurant.id, role: ROLE.RESTAURANT },
+      process.env.JWT_SECRET_RESTAURANT,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
 
     return res.status(200).json(successResponse("Login successful.", token));
   } catch (error) {
-        console.log(error)
-    console.log('Msg :',error.message)
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
-export const verifyAdmin = async (req, res) => {
+export const verifyRestaurant = async (req, res) => {
   try {
     const { token } = req.params;
 
@@ -141,33 +192,33 @@ export const verifyAdmin = async (req, res) => {
         .json(clientErrorResponse("Verification token is required."));
     }
 
-    const admin = await Admin.findOne({
+    const restaurant = await Restaurant.findOne({
       where: { verifyToken: token },
     });
 
-    if (!admin) {
+    if (!restaurant) {
       return res
         .status(401)
         .json(clientErrorResponse("Invalid verification token."));
     }
 
-    if (admin.isVerified) {
+    if (restaurant.isVerified) {
       return res
         .status(400)
         .json(clientErrorResponse("Account is already verified."));
     }
 
-    if (!isTokenValid(admin.verifyTokenExpires)) {
+    if (!isTokenValid(restaurant.verifyTokenExpires)) {
       return res
         .status(410)
         .json(clientErrorResponse("Verification token has expired."));
     }
 
-    admin.verifyToken = null;
-    admin.verifyTokenExpires = null;
-    admin.isVerified = true;
+    restaurant.verifyToken = null;
+    restaurant.verifyTokenExpires = null;
+    restaurant.isVerified = true;
 
-    await admin.save();
+    await restaurant.save();
 
     return res
       .status(200)
@@ -179,7 +230,7 @@ export const verifyAdmin = async (req, res) => {
   }
 };
 
-export const sendVerifyTokenAdmin = async (req, res) => {
+export const sendVerifyTokenRestaurant = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -191,11 +242,11 @@ export const sendVerifyTokenAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const restaurant = await Restaurant.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin || admin.isVerified) {
+    if (!restaurant || restaurant.isVerified) {
       return res
         .status(200)
         .json(
@@ -209,12 +260,12 @@ export const sendVerifyTokenAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
-    admin.verifyToken = verifyToken;
-    admin.verifyTokenExpires = new Date(Date.now() + expiresIn);
+    restaurant.verifyToken = verifyToken;
+    restaurant.verifyTokenExpires = new Date(Date.now() + expiresIn);
 
-    await admin.save();
+    await restaurant.save();
 
-    sendVerifyMailAdmin(normalizedEmail,verifyToken)
+    sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
     return res
       .status(200)
@@ -230,7 +281,7 @@ export const sendVerifyTokenAdmin = async (req, res) => {
   }
 };
 
-export const resetPasswordAdmin = async (req, res) => {
+export const resetPasswordRestaurant = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
@@ -245,15 +296,15 @@ export const resetPasswordAdmin = async (req, res) => {
       return res.status(400).json(clientErrorResponse("Password is required."));
     }
 
-    const admin = await Admin.findOne({
+    const restaurant = await Restaurant.findOne({
       where: { resetPasswordToken: token },
     });
 
-    if (!admin) {
+    if (!restaurant) {
       return res.status(401).json(clientErrorResponse("Invalid reset token."));
     }
 
-    if (!isTokenValid(admin.resetPasswordTokenExpires)) {
+    if (!isTokenValid(restaurant.resetPasswordTokenExpires)) {
       return res
         .status(410)
         .json(clientErrorResponse("Reset token has expired."));
@@ -261,11 +312,11 @@ export const resetPasswordAdmin = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    admin.password = hashedPassword;
-    admin.resetPasswordToken = null;
-    admin.resetPasswordTokenExpires = null;
+    restaurant.password = hashedPassword;
+    restaurant.resetPasswordToken = null;
+    restaurant.resetPasswordTokenExpires = null;
 
-    await admin.save();
+    await restaurant.save();
 
     return res
       .status(200)
@@ -279,7 +330,7 @@ export const resetPasswordAdmin = async (req, res) => {
   }
 };
 
-export const sendResetPasswordTokenAdmin = async (req, res) => {
+export const sendResetPasswordTokenRestaurant = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -291,11 +342,11 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const restaurant = await Restaurant.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin) {
+    if (!restaurant) {
       return res
         .status(200)
         .json(
@@ -309,12 +360,12 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.RESET_TOKEN_EXPIRES_IN) || 3600000;
 
-    admin.resetPasswordToken = resetPasswordToken;
-    admin.resetPasswordTokenExpires = new Date(Date.now() + expiresIn);
+    restaurant.resetPasswordToken = resetPasswordToken;
+    restaurant.resetPasswordTokenExpires = new Date(Date.now() + expiresIn);
 
-    await admin.save();
+    await restaurant.save();
 
-    sendResetMailAdmin(normalizedEmail,resetPasswordToken)
+    sendResetMailRestaurant(normalizedEmail, resetPasswordToken);
 
     return res
       .status(200)
@@ -329,91 +380,5 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
       .json(
         serverErrorResponse("Something went wrong. Please try again later."),
       );
-  }
-};
-
-export const activateAdmin = async (req, res) => {
-  try {
-    const id = req.id
-    const { adminId } = req.params;
-
-    if (!adminId ) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("ID is required."));
-    }
-
-    if(id == adminId){
-      return res
-        .status(400)
-        .json(clientErrorResponse("You can't activate your own account."));
-    }
-
-    const admin = await Admin.findByPk(Number(adminId));
-
-    if (!admin) {
-      return res
-        .status(404)
-        .json(clientErrorResponse("ID not found."));
-    }
-
-    if(admin.isActive){
-      return res
-        .status(400)
-        .json(clientErrorResponse("Account is already active."));
-    }
-
-    admin.isActive = true;
-
-    await admin.save()
-
-    return res.status(200).json(successResponse("Account activated successful."));
-  } catch (error) {
-    return res
-      .status(500)
-      .json(serverErrorResponse("Something went wrong. Please try again."));
-  }
-};
-
-export const deactivateAdmin = async (req, res) => {
-  try {
-    const id = req.id
-    const { adminId } = req.params;
-
-    if (!adminId ) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("ID is required."));
-    }
-
-    if(id == adminId){
-      return res
-        .status(400)
-        .json(clientErrorResponse("You can't deactivate your own account."));
-    }
-
-    const admin = await Admin.findByPk(Number(adminId));
-
-    if (!admin) {
-      return res
-        .status(404)
-        .json(clientErrorResponse("ID not found."));
-    }
-
-    if(!admin.isActive){
-      return res
-        .status(400)
-        .json(clientErrorResponse("Account is already deactive."));
-    }
-
-    admin.isActive = false;
-
-    await admin.save()
-
-    return res.status(200).json(successResponse("Account deactivated successful."));
-  } catch (error) {
-    return res
-      .status(500)
-      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };

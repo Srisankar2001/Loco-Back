@@ -10,12 +10,18 @@ import {
 } from "../dto/response.js";
 import { isTokenValid } from "../utils/tokenUtil.js";
 import { ROLE } from "../enum/Role.js";
-import { sendResetMailAdmin, sendVerifyMailAdmin } from "../config/mail.js";
+import { sendResetMailDeliveryPerson, sendVerifyMailDeliveryPerson } from "../config/mail.js";
+import { STATUS } from "../enum/Status.js";
+import { DOCUMENT } from "../enum/Document.js";
 
-const Admin = model.Admin
-export const registerAdmin = async (req, res) => {
+const DeliveryPerson = model.DeliveryPerson
+const DeliveryPersonDocument = model.DeliveryPersonDocument
+
+export const registerDeliveryPerson = async (req, res) => {
   try {
     const { firstname, lastname, email, phoneNumber, password } = req.body;
+    const userPicture = req.files?.userPicture?.[0];
+    const userDocument = req.files?.userDocument?.[0];
 
     if (!firstname || !lastname || !email || !phoneNumber || !password) {
       return res
@@ -25,11 +31,11 @@ export const registerAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const existingAdmin = await Admin.findOne({
+    const existingDeliveryPerson = await DeliveryPerson.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (existingAdmin) {
+    if (existingDeliveryPerson) {
       return res
         .status(409)
         .json(clientErrorResponse("Email is already registered."));
@@ -41,7 +47,7 @@ export const registerAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
-    await Admin.create({
+    const deliveryPerson = await DeliveryPerson.create({
       firstname,
       lastname,
       email: normalizedEmail,
@@ -50,10 +56,24 @@ export const registerAdmin = async (req, res) => {
       verifyToken,
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
-      isActive: true
+      isActive: false,
+      status: STATUS.PENDING
     });
 
-    sendVerifyMailAdmin(normalizedEmail,verifyToken)
+    await DeliveryPersonDocument.bulkCreate([
+  {
+    deliveryPersonId: deliveryPerson.id,
+    type: DOCUMENT.USER_PICTURE,
+    path: userPicture,
+  },
+  {
+    deliveryPersonId: deliveryPerson.id,
+    type: DOCUMENT.USER_DOCUMENT,
+    path: userDocument,
+  },
+]);
+
+    sendVerifyMailDeliveryPerson(normalizedEmail,verifyToken)
 
     return res
       .status(201)
@@ -69,7 +89,7 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
-export const loginAdmin = async (req, res) => {
+export const loginDeliveryPerson = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -81,17 +101,17 @@ export const loginAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const deliveryPerson = await DeliveryPerson.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin) {
+    if (!deliveryPerson) {
       return res
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
     }
 
-    if (!admin.isVerified) {
+    if (!deliveryPerson.isVerified) {
       return res
         .status(403)
         .json(
@@ -99,7 +119,23 @@ export const loginAdmin = async (req, res) => {
         );
     }
 
-    if (!admin.isActive) {
+    if (deliveryPerson.status == STATUS.PENDING) {
+      return res
+        .status(403)
+        .json(
+          clientErrorResponse("Your account is pending admin verification. Please wait for approval."),
+        );
+    }
+
+    if (deliveryPerson.status == STATUS.REJECTED) {
+      return res
+        .status(403)
+        .json(
+          clientErrorResponse("Your account verification was rejected by the administrator."),
+        );
+    }
+
+    if (!deliveryPerson.isActive) {
       return res
         .status(403)
         .json(
@@ -107,7 +143,7 @@ export const loginAdmin = async (req, res) => {
         );
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const isMatch = await bcrypt.compare(password, deliveryPerson.password);
 
     if (!isMatch) {
       return res
@@ -116,22 +152,20 @@ export const loginAdmin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: admin.id, role: ROLE.ADMIN },
-      process.env.JWT_SECRET_ADMIN,
+      { id: deliveryPerson.id, role: ROLE.DELIVERY_PERSON },
+      process.env.JWT_SECRET_DELIVERY_PERSON,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
 
     return res.status(200).json(successResponse("Login successful.", token));
   } catch (error) {
-        console.log(error)
-    console.log('Msg :',error.message)
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
-export const verifyAdmin = async (req, res) => {
+export const verifyDeliveryPerson = async (req, res) => {
   try {
     const { token } = req.params;
 
@@ -141,33 +175,33 @@ export const verifyAdmin = async (req, res) => {
         .json(clientErrorResponse("Verification token is required."));
     }
 
-    const admin = await Admin.findOne({
+    const deliveryPerson = await DeliveryPerson.findOne({
       where: { verifyToken: token },
     });
 
-    if (!admin) {
+    if (!deliveryPerson) {
       return res
         .status(401)
         .json(clientErrorResponse("Invalid verification token."));
     }
 
-    if (admin.isVerified) {
+    if (deliveryPerson.isVerified) {
       return res
         .status(400)
         .json(clientErrorResponse("Account is already verified."));
     }
 
-    if (!isTokenValid(admin.verifyTokenExpires)) {
+    if (!isTokenValid(deliveryPerson.verifyTokenExpires)) {
       return res
         .status(410)
         .json(clientErrorResponse("Verification token has expired."));
     }
 
-    admin.verifyToken = null;
-    admin.verifyTokenExpires = null;
-    admin.isVerified = true;
+    deliveryPerson.verifyToken = null;
+    deliveryPerson.verifyTokenExpires = null;
+    deliveryPerson.isVerified = true;
 
-    await admin.save();
+    await deliveryPerson.save();
 
     return res
       .status(200)
@@ -179,7 +213,7 @@ export const verifyAdmin = async (req, res) => {
   }
 };
 
-export const sendVerifyTokenAdmin = async (req, res) => {
+export const sendVerifyTokenDeliveryPerson = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -191,11 +225,11 @@ export const sendVerifyTokenAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const deliveryPerson = await DeliveryPerson.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin || admin.isVerified) {
+    if (!deliveryPerson || deliveryPerson.isVerified) {
       return res
         .status(200)
         .json(
@@ -209,12 +243,12 @@ export const sendVerifyTokenAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.VERIFY_TOKEN_EXPIRES_IN) || 43200000;
 
-    admin.verifyToken = verifyToken;
-    admin.verifyTokenExpires = new Date(Date.now() + expiresIn);
+    deliveryPerson.verifyToken = verifyToken;
+    deliveryPerson.verifyTokenExpires = new Date(Date.now() + expiresIn);
 
-    await admin.save();
+    await deliveryPerson.save();
 
-    sendVerifyMailAdmin(normalizedEmail,verifyToken)
+    sendVerifyMailDeliveryPerson(normalizedEmail,verifyToken)
 
     return res
       .status(200)
@@ -230,7 +264,7 @@ export const sendVerifyTokenAdmin = async (req, res) => {
   }
 };
 
-export const resetPasswordAdmin = async (req, res) => {
+export const resetPasswordDeliveryPerson = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
@@ -245,15 +279,15 @@ export const resetPasswordAdmin = async (req, res) => {
       return res.status(400).json(clientErrorResponse("Password is required."));
     }
 
-    const admin = await Admin.findOne({
+    const deliveryPerson = await DeliveryPerson.findOne({
       where: { resetPasswordToken: token },
     });
 
-    if (!admin) {
+    if (!deliveryPerson) {
       return res.status(401).json(clientErrorResponse("Invalid reset token."));
     }
 
-    if (!isTokenValid(admin.resetPasswordTokenExpires)) {
+    if (!isTokenValid(deliveryPerson.resetPasswordTokenExpires)) {
       return res
         .status(410)
         .json(clientErrorResponse("Reset token has expired."));
@@ -261,11 +295,11 @@ export const resetPasswordAdmin = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    admin.password = hashedPassword;
-    admin.resetPasswordToken = null;
-    admin.resetPasswordTokenExpires = null;
+    deliveryPerson.password = hashedPassword;
+    deliveryPerson.resetPasswordToken = null;
+    deliveryPerson.resetPasswordTokenExpires = null;
 
-    await admin.save();
+    await deliveryPerson.save();
 
     return res
       .status(200)
@@ -279,7 +313,7 @@ export const resetPasswordAdmin = async (req, res) => {
   }
 };
 
-export const sendResetPasswordTokenAdmin = async (req, res) => {
+export const sendResetPasswordTokenDeliveryPerson = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -291,11 +325,11 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const admin = await Admin.findOne({
+    const deliveryPerson = await DeliveryPerson.findOne({
       where: { email: normalizedEmail },
     });
 
-    if (!admin) {
+    if (!deliveryPerson) {
       return res
         .status(200)
         .json(
@@ -309,12 +343,12 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
 
     const expiresIn = Number(process.env.RESET_TOKEN_EXPIRES_IN) || 3600000;
 
-    admin.resetPasswordToken = resetPasswordToken;
-    admin.resetPasswordTokenExpires = new Date(Date.now() + expiresIn);
+    deliveryPerson.resetPasswordToken = resetPasswordToken;
+    deliveryPerson.resetPasswordTokenExpires = new Date(Date.now() + expiresIn);
 
-    await admin.save();
+    await deliveryPerson.save();
 
-    sendResetMailAdmin(normalizedEmail,resetPasswordToken)
+    sendResetMailDeliveryPerson(normalizedEmail,resetPasswordToken)
 
     return res
       .status(200)
@@ -329,91 +363,5 @@ export const sendResetPasswordTokenAdmin = async (req, res) => {
       .json(
         serverErrorResponse("Something went wrong. Please try again later."),
       );
-  }
-};
-
-export const activateAdmin = async (req, res) => {
-  try {
-    const id = req.id
-    const { adminId } = req.params;
-
-    if (!adminId ) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("ID is required."));
-    }
-
-    if(id == adminId){
-      return res
-        .status(400)
-        .json(clientErrorResponse("You can't activate your own account."));
-    }
-
-    const admin = await Admin.findByPk(Number(adminId));
-
-    if (!admin) {
-      return res
-        .status(404)
-        .json(clientErrorResponse("ID not found."));
-    }
-
-    if(admin.isActive){
-      return res
-        .status(400)
-        .json(clientErrorResponse("Account is already active."));
-    }
-
-    admin.isActive = true;
-
-    await admin.save()
-
-    return res.status(200).json(successResponse("Account activated successful."));
-  } catch (error) {
-    return res
-      .status(500)
-      .json(serverErrorResponse("Something went wrong. Please try again."));
-  }
-};
-
-export const deactivateAdmin = async (req, res) => {
-  try {
-    const id = req.id
-    const { adminId } = req.params;
-
-    if (!adminId ) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("ID is required."));
-    }
-
-    if(id == adminId){
-      return res
-        .status(400)
-        .json(clientErrorResponse("You can't deactivate your own account."));
-    }
-
-    const admin = await Admin.findByPk(Number(adminId));
-
-    if (!admin) {
-      return res
-        .status(404)
-        .json(clientErrorResponse("ID not found."));
-    }
-
-    if(!admin.isActive){
-      return res
-        .status(400)
-        .json(clientErrorResponse("Account is already deactive."));
-    }
-
-    admin.isActive = false;
-
-    await admin.save()
-
-    return res.status(200).json(successResponse("Account deactivated successful."));
-  } catch (error) {
-    return res
-      .status(500)
-      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
