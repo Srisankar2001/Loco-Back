@@ -9,15 +9,32 @@ const Review = db.define('Review', {
   },
   rating: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
+    max: 5,
+    min: 0
+  },
+  comment: {
+    type: DataTypes.STRING
   },
   reply: {
     type: DataTypes.STRING
+  },
+  restaurantId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   }
 }, {
   tableName: 'review',
   timestamps: true
 });
 
+Review.associate = (models) => {
+  Review.belongsTo(models.Restaurant, { foreignKey: 'restaurantId' });
+  Review.belongsTo(models.User, { foreignKey: 'userId' });
+};
+  
 export default Review;

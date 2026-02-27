@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import db from '../config/db.js';
+import models from './index.js';
 
 const Restaurant = db.define('Restaurant', {
   id: {
@@ -40,4 +41,6 @@ const Restaurant = db.define('Restaurant', {
   timestamps: true
 });
 
+Restaurant.hasMany(models.Review, { foreignKey: 'restaurantId' });
+// Restaurant.hasMany(models.Item, { foreignKey: 'resturentId' });
 export default Restaurant;
