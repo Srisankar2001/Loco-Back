@@ -73,11 +73,7 @@ const Restaurant = db.define(
       type: DataTypes.ENUM(...Object.values(STATUS)),
       allowNull: false,
       defaultValue: STATUS.PENDING,
-    },
-    reason: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    }
   },
   {
     tableName: "restaurant",

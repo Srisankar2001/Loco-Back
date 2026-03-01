@@ -10,18 +10,20 @@ import {
 } from "../dto/response.js";
 import { isTokenValid } from "../utils/tokenUtil.js";
 import { ROLE } from "../enum/Role.js";
-import { sendResetMailDeliveryPerson, sendVerifyMailDeliveryPerson } from "../config/mail.js";
+import {
+  sendResetMailDeliveryPerson,
+  sendVerifyMailDeliveryPerson,
+} from "../config/mail.js";
 import { STATUS } from "../enum/Status.js";
-import { DOCUMENT } from "../enum/Document.js";
 
-const DeliveryPerson = model.DeliveryPerson
-const DeliveryPersonDocument = model.DeliveryPersonDocument
+const DeliveryPerson = model.DeliveryPerson;
+const DeliveryPersonDocument = model.DeliveryPersonDocument;
 
 export const registerDeliveryPerson = async (req, res) => {
   try {
     const { firstname, lastname, email, phoneNumber, password } = req.body;
-    const userPicture = req.files?.userPicture?.[0];
-    const userDocument = req.files?.userDocument?.[0];
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
 
     if (!firstname || !lastname || !email || !phoneNumber || !password) {
       return res
@@ -31,15 +33,15 @@ export const registerDeliveryPerson = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const existingDeliveryPerson = await DeliveryPerson.findOne({
-      where: { email: normalizedEmail },
-    });
+    // const existingDeliveryPerson = await DeliveryPerson.findOne({
+    //   where: { email: normalizedEmail },
+    // });
 
-    if (existingDeliveryPerson) {
-      return res
-        .status(409)
-        .json(clientErrorResponse("Email is already registered."));
-    }
+    // if (existingDeliveryPerson) {
+    //   return res
+    //     .status(409)
+    //     .json(clientErrorResponse("Email is already registered."));
+    // }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -57,23 +59,16 @@ export const registerDeliveryPerson = async (req, res) => {
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
       isActive: false,
-      status: STATUS.PENDING
+      status: STATUS.PENDING,
     });
 
-    await DeliveryPersonDocument.bulkCreate([
-  {
-    deliveryPersonId: deliveryPerson.id,
-    type: DOCUMENT.USER_PICTURE,
-    path: userPicture,
-  },
-  {
-    deliveryPersonId: deliveryPerson.id,
-    type: DOCUMENT.USER_DOCUMENT,
-    path: userDocument,
-  },
-]);
+    await DeliveryPersonDocument.create({
+      deliveryPersonId: deliveryPerson.id,
+      userPicture: userPicture,
+      userDocument: userDocument,
+    });
 
-    sendVerifyMailDeliveryPerson(normalizedEmail,verifyToken)
+    sendVerifyMailDeliveryPerson(normalizedEmail, verifyToken);
 
     return res
       .status(201)
@@ -110,6 +105,14 @@ export const loginDeliveryPerson = async (req, res) => {
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
     }
+ 
+    const isMatch = await bcrypt.compare(password, deliveryPerson.password);
+
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Invalid email or password."));
+    }
 
     if (!deliveryPerson.isVerified) {
       return res
@@ -123,7 +126,9 @@ export const loginDeliveryPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account is pending admin verification. Please wait for approval."),
+          clientErrorResponse(
+            "Your account is pending admin verification. Please wait for approval.",
+          ),
         );
     }
 
@@ -131,7 +136,9 @@ export const loginDeliveryPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account verification was rejected by the administrator."),
+          clientErrorResponse(
+            "Your account verification was rejected by the administrator.",
+          ),
         );
     }
 
@@ -139,16 +146,10 @@ export const loginDeliveryPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account is blocked. Please contact the administrator."),
+          clientErrorResponse(
+            "Your account is blocked. Please contact the administrator.",
+          ),
         );
-    }
-
-    const isMatch = await bcrypt.compare(password, deliveryPerson.password);
-
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json(clientErrorResponse("Invalid email or password."));
     }
 
     const token = jwt.sign(
@@ -248,7 +249,7 @@ export const sendVerifyTokenDeliveryPerson = async (req, res) => {
 
     await deliveryPerson.save();
 
-    sendVerifyMailDeliveryPerson(normalizedEmail,verifyToken)
+    sendVerifyMailDeliveryPerson(normalizedEmail, verifyToken);
 
     return res
       .status(200)
@@ -348,7 +349,7 @@ export const sendResetPasswordTokenDeliveryPerson = async (req, res) => {
 
     await deliveryPerson.save();
 
-    sendResetMailDeliveryPerson(normalizedEmail,resetPasswordToken)
+    sendResetMailDeliveryPerson(normalizedEmail, resetPasswordToken);
 
     return res
       .status(200)
@@ -363,5 +364,59 @@ export const sendResetPasswordTokenDeliveryPerson = async (req, res) => {
       .json(
         serverErrorResponse("Something went wrong. Please try again later."),
       );
+  }
+};
+
+export const updateDocumentDeliveryPerson = async (req, res) => {
+  try {
+    const id = Number(req.id);
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
+
+    if (!id) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Unauthorized. User ID not found."));
+    }
+
+    const deliveryPerson = await DeliveryPerson.findByPk(id);
+
+    if (!deliveryPerson) {
+      return res.status(404).json(clientErrorResponse("Delivery person not found."));
+    }
+
+    const deliveryPersonDocument = await DeliveryPersonDocument.findOne({
+      where: { deliveryPersonId: id },
+    });
+
+    if (!deliveryPersonDocument) {
+      return res.status(404).json(clientErrorResponse("Document record not found."));
+    }
+
+    if (userPicture) {
+      deliveryPersonDocument.userPicture = userPicture;
+      deliveryPersonDocument.userPictureStatus = STATUS.PENDING;
+      deliveryPersonDocument.userPictureReason = null;
+    }
+
+    if (userDocument) {
+      deliveryPersonDocument.userDocument = userDocument;
+      deliveryPersonDocument.userDocumentStatus = STATUS.PENDING;
+      deliveryPersonDocument.userDocumentReason = null;
+    }
+
+    await deliveryPersonDocument.save();
+
+    return res
+      .status(200)
+      .json(
+        successResponse(
+          "Documents uploaded successfully."
+        ),
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };

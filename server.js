@@ -6,16 +6,23 @@ import db from './src/config/db.js';
 
 import adminRouter from './src/routes/adminRoute.js';
 import userRouter from './src/routes/userRoute.js';
+import pickupPersonRouter from './src/routes/pickupPersonRoute.js';
+import deliveryPersonRouter from './src/routes/deliveryPersonRoute.js';
+import restaurantRouter from './src/routes/restaurantRoute.js';
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
 app.use('/admin',adminRouter)
 app.use('/user',userRouter)
+app.use('/delivery-person',deliveryPersonRouter)
+app.use('/pickup-person',pickupPersonRouter)
+app.use('/restaurant',restaurantRouter)
 
 const port = process.env.SERVER_PORT || 3001;
 
@@ -23,7 +30,7 @@ try {
     await db.authenticate();
     console.log("DB Connection : Success");
 
-    await db.sync({force:true,alter:true})
+    await db.sync({force:false,alter:true})
         .then(() => {
             console.log("Tables are Ready")
             app.listen(port, (err) => {

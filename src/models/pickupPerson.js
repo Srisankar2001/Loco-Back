@@ -67,10 +67,6 @@ const PickupPerson = db.define(
       allowNull: false,
       defaultValue: STATUS.PENDING,
     },
-    reason: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
   },
   {
     tableName: "pickup_person",

@@ -10,20 +10,22 @@ import {
 } from "../dto/response.js";
 import { isTokenValid } from "../utils/tokenUtil.js";
 import { ROLE } from "../enum/Role.js";
-import { sendResetMailDeliveryPerson, sendVerifyMailDeliveryPerson, sendVerifyMailPickupPerson } from "../config/mail.js";
+import {
+  sendResetMailPickupPerson,
+  sendVerifyMailPickupPerson,
+} from "../config/mail.js";
 import { STATUS } from "../enum/Status.js";
-import { DOCUMENT } from "../enum/Document.js";
 
-const PickupPerson = model.PickupPerson
-const PickupPersonDocument = model.PickupPersonDocument
+const PickupPerson = model.PickupPerson;
+const PickupPersonDocument = model.PickupPersonDocument;
 
 export const registerPickupPerson = async (req, res) => {
   try {
     const { firstname, lastname, email, phoneNumber, password } = req.body;
-    const userPicture = req.files?.userPicture?.[0];
-    const userDocument = req.files?.userDocument?.[0];
-    const vehiclePicture = req.files?.vehiclePicture?.[0];
-    const vehicleDocument = req.files?.vehicleDocument?.[0];
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
+    const vehiclePicture = req.files?.vehiclePicture?.[0]?.filename;
+    const vehicleDocument = req.files?.vehicleDocument?.[0]?.filename;
 
     if (!firstname || !lastname || !email || !phoneNumber || !password) {
       return res
@@ -59,33 +61,18 @@ export const registerPickupPerson = async (req, res) => {
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
       isActive: false,
-      status: STATUS.PENDING
+      status: STATUS.PENDING,
     });
 
-    await PickupPersonDocument.bulkCreate([
-  {
-    pickupPersonId: pickupPerson.id,
-    type: DOCUMENT.USER_PICTURE,
-    path: userPicture,
-  },
-  {
-    pickupPersonId: pickupPerson.id,
-    type: DOCUMENT.USER_DOCUMENT,
-    path: userDocument,
-  },
-  {
-    pickupPersonId: pickupPerson.id,
-    type: DOCUMENT.VECHILE_PICTURE,
-    path: vehiclePicture,
-  },
-  {
-    pickupPersonId: pickupPerson.id,
-    type: DOCUMENT.VEHICLE_DOCUMENT,
-    path: vehicleDocument,
-  },
-]);
+    await PickupPersonDocument.create({
+      pickupPersonId: pickupPerson.id,
+      userPicture: userPicture,
+      userDocument: userDocument,
+      vehiclePicture: vehiclePicture,
+      vehicleDocument: vehicleDocument,
+    });
 
-    sendVerifyMailPickupPerson(normalizedEmail,verifyToken)
+    sendVerifyMailPickupPerson(normalizedEmail, verifyToken);
 
     return res
       .status(201)
@@ -123,6 +110,14 @@ export const loginPickupPerson = async (req, res) => {
         .json(clientErrorResponse("Invalid email or password."));
     }
 
+    const isMatch = await bcrypt.compare(password, pickupPerson.password);
+
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Invalid email or password."));
+    }
+
     if (!pickupPerson.isVerified) {
       return res
         .status(403)
@@ -135,7 +130,9 @@ export const loginPickupPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account is pending admin verification. Please wait for approval."),
+          clientErrorResponse(
+            "Your account is pending admin verification. Please wait for approval.",
+          ),
         );
     }
 
@@ -143,7 +140,9 @@ export const loginPickupPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account verification was rejected by the administrator."),
+          clientErrorResponse(
+            "Your account verification was rejected by the administrator.",
+          ),
         );
     }
 
@@ -151,16 +150,10 @@ export const loginPickupPerson = async (req, res) => {
       return res
         .status(403)
         .json(
-          clientErrorResponse("Your account is blocked. Please contact the administrator."),
+          clientErrorResponse(
+            "Your account is blocked. Please contact the administrator.",
+          ),
         );
-    }
-
-    const isMatch = await bcrypt.compare(password, pickupPerson.password);
-
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json(clientErrorResponse("Invalid email or password."));
     }
 
     const token = jwt.sign(
@@ -260,7 +253,7 @@ export const sendVerifyTokenPickupPerson = async (req, res) => {
 
     await pickupPerson.save();
 
-    sendVerifyMailPickupPerson(normalizedEmail,verifyToken)
+    sendVerifyMailPickupPerson(normalizedEmail, verifyToken);
 
     return res
       .status(200)
@@ -360,7 +353,7 @@ export const sendResetPasswordTokenPickupPerson = async (req, res) => {
 
     await pickupPerson.save();
 
-    sendResetMailPickupPerson(normalizedEmail,resetPasswordToken)
+    sendResetMailPickupPerson(normalizedEmail, resetPasswordToken);
 
     return res
       .status(200)
@@ -375,5 +368,73 @@ export const sendResetPasswordTokenPickupPerson = async (req, res) => {
       .json(
         serverErrorResponse("Something went wrong. Please try again later."),
       );
+  }
+};
+
+export const updateDocumentPickupPerson = async (req, res) => {
+  try {
+    const id = Number(req.id);
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
+    const vehiclePicture = req.files?.vehiclePicture?.[0]?.filename;
+    const vehicleDocument = req.files?.vehicleDocument?.[0]?.filename;
+
+    if (!id) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Unauthorized. User ID not found."));
+    }
+
+    const pickupPerson = await PickupPerson.findByPk(id);
+
+    if (!pickupPerson) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Pickup person not found."));
+    }
+
+    const pickupPersonDocument = await PickupPersonDocument.findOne({
+      where: { pickupPersonId: id },
+    });
+
+    if (!pickupPersonDocument) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Document record not found."));
+    }
+
+    if (userPicture) {
+      pickupPersonDocument.userPicture = userPicture;
+      pickupPersonDocument.userPictureStatus = STATUS.PENDING;
+      pickupPersonDocument.userPictureReason = null;
+    }
+
+    if (userDocument) {
+      pickupPersonDocument.userDocument = userDocument;
+      pickupPersonDocument.userDocumentStatus = STATUS.PENDING;
+      pickupPersonDocument.userDocumentReason = null;
+    }
+
+    if (vehiclePicture) {
+      pickupPersonDocument.vehiclePicture = vehiclePicture;
+      pickupPersonDocument.vehiclePictureStatus = STATUS.PENDING;
+      pickupPersonDocument.vehiclePictureReason = null;
+    }
+
+    if (vehicleDocument) {
+      pickupPersonDocument.vehicleDocument = vehicleDocument;
+      pickupPersonDocument.vehicleDocumentStatus = STATUS.PENDING;
+      pickupPersonDocument.vehicleDocumentReason = null;
+    }
+
+    await pickupPersonDocument.save();
+
+    return res
+      .status(200)
+      .json(successResponse("Documents uploaded successfully."));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };

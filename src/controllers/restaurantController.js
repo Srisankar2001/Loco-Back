@@ -15,7 +15,6 @@ import {
   sendVerifyMailRestaurant,
 } from "../config/mail.js";
 import { STATUS } from "../enum/Status.js";
-import { DOCUMENT } from "../enum/Document.js";
 
 const Restaurant = model.Restaurant;
 const RestaurantDocument = model.RestaurantDocument;
@@ -24,9 +23,9 @@ export const registerRestaurant = async (req, res) => {
   try {
     const { name, address, email, phoneNumber, password } = req.body;
     const image = req.files?.image?.[0];
-    const userPicture = req.files?.userPicture?.[0];
-    const userDocument = req.files?.userDocument?.[0];
-    const restaurantDocument = req.files?.restaurantDocument?.[0];
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
+    const restaurantDocument = req.files?.restaurantDocument?.[0]?.filename;
 
     if (!name || !address || !email || !phoneNumber || !password) {
       return res
@@ -66,23 +65,12 @@ export const registerRestaurant = async (req, res) => {
       status: STATUS.PENDING,
     });
 
-    await RestaurantDocument.bulkCreate([
-      {
-        restaurant: restaurant.id,
-        type: DOCUMENT.USER_PICTURE,
-        path: userPicture,
-      },
-      {
-        restaurant: restaurant.id,
-        type: DOCUMENT.USER_DOCUMENT,
-        path: userDocument,
-      },
-      {
-        restaurant: restaurant.id,
-        type: DOCUMENT.RESTAURANT_DOCUMENT,
-        path: restaurantDocument,
-      },
-    ]);
+    await RestaurantDocument.create({
+      restaurantId: restaurant.id,
+      userPicture: userPicture,
+      userDocument: userDocument,
+      restaurantDocument: restaurantDocument,
+    });
 
     sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
@@ -117,6 +105,14 @@ export const loginRestaurant = async (req, res) => {
     });
 
     if (!restaurant) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Invalid email or password."));
+    }
+
+    const isMatch = await bcrypt.compare(password, restaurant.password);
+
+    if (!isMatch) {
       return res
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
@@ -158,14 +154,6 @@ export const loginRestaurant = async (req, res) => {
             "Your account is blocked. Please contact the administrator.",
           ),
         );
-    }
-
-    const isMatch = await bcrypt.compare(password, restaurant.password);
-
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json(clientErrorResponse("Invalid email or password."));
     }
 
     const token = jwt.sign(
@@ -380,5 +368,64 @@ export const sendResetPasswordTokenRestaurant = async (req, res) => {
       .json(
         serverErrorResponse("Something went wrong. Please try again later."),
       );
+  }
+};
+
+export const updateDocumentRestaurant = async (req, res) => {
+  try {
+    const id = Number(req.id);
+    const userPicture = req.files?.userPicture?.[0]?.filename;
+    const userDocument = req.files?.userDocument?.[0]?.filename;
+    const restaurantDocument = req.files?.restaurantDocument?.[0]?.filename;
+
+    if (!id) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Unauthorized. User ID not found."));
+    }
+
+    const restaurant = await Restaurant.findByPk(id);
+
+    if (!restaurant) {
+      return res.status(404).json(clientErrorResponse("Restaurant not found."));
+    }
+
+    const restaurantDocumentEntity = await RestaurantDocument.findOne({
+      where: { restaurantId: id },
+    });
+
+    if (!restaurantDocumentEntity) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Document record not found."));
+    }
+
+    if (userPicture) {
+      restaurantDocumentEntity.userPicture = userPicture;
+      restaurantDocumentEntity.userPictureStatus = STATUS.PENDING;
+      restaurantDocumentEntity.userPictureReason = null;
+    }
+
+    if (userDocument) {
+      restaurantDocumentEntity.userDocument = userDocument;
+      restaurantDocumentEntity.userDocumentStatus = STATUS.PENDING;
+      restaurantDocumentEntity.userDocumentReason = null;
+    }
+
+    if (restaurantDocument) {
+      restaurantDocumentEntity.restaurantDocument = restaurantDocument;
+      restaurantDocumentEntity.restaurantDocumentStatus = STATUS.PENDING;
+      restaurantDocumentEntity.restaurantDocumentReason = null;
+    }
+
+    await restaurantDocumentEntity.save();
+
+    return res
+      .status(200)
+      .json(successResponse("Documents uploaded successfully."));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };

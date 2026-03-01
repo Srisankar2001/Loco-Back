@@ -15,7 +15,7 @@ import RouteStation from './routeStation.js';
 import StationSchedule from './stationSchedule.js';
 import Payment from './payment.js';
 import PickupPersonDocument from './pickupPersonDocument.js';
-import DeliveryPersonDocument from './DeliveryPersonDocument.js';
+import DeliveryPersonDocument from './deliveryPersonDocument.js';
 import RestaurantDocument from './restaurantDocument.js';
 
 Admin.hasMany(User, { foreignKey: 'adminId' });
