@@ -31,10 +31,4 @@ const Review = db.define('Review', {
   tableName: 'review',
   timestamps: true
 });
-
-Review.associate = (models) => {
-  Review.belongsTo(models.Restaurant, { foreignKey: 'restaurantId' });
-  Review.belongsTo(models.User, { foreignKey: 'userId' });
-};
-  
 export default Review;
