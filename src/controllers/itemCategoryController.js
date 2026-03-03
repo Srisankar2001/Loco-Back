@@ -30,7 +30,8 @@ export const createMultipleItemCategories = async (req, res) => {
       // Get extension
       const ext = path.extname(file.originalname);
       // New filename is the item name + extension
-      const newFilename = `${item.name}${ext}`;
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const newFilename = `${uniqueSuffix}_${item.name}${ext}`;
       const newPath = path.join(file.destination, newFilename);
 
       // Rename the file
