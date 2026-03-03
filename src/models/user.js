@@ -58,5 +58,6 @@ const User = db.define('User', {
     tableName: 'user',
     timestamps: true
 });
+User.hasMany(models.Review, { foreignKey: 'userId' });
 
-export default User;
+export default User;    

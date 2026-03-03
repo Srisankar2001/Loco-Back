@@ -80,5 +80,4 @@ const Restaurant = db.define(
     timestamps: true,
   },
 );
-
 export default Restaurant;
