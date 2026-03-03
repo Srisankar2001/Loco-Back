@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { createReview, getAllReviews, getReviewById, getReviewsByRestaurantId, replyToReview } from '../controllers/reviewController.js';
+import { createReview, deleteReview, getAllReviews, getReviewById, getReviewsByRestaurantId, replyToReview } from '../controllers/reviewController.js';
 
 /**
  * @openapi
