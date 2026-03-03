@@ -1,6 +1,6 @@
 import multer from "multer";
 import path from "path";
-
+import fs from "fs";
 const uploadDir = "C:\\locomunch\\archive";
 
 // Ensure directory exists
