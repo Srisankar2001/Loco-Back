@@ -13,12 +13,17 @@ import userRouter from './src/routes/userRoute.js';
 import pickupPersonRouter from './src/routes/pickupPersonRoute.js';
 import deliveryPersonRouter from './src/routes/deliveryPersonRoute.js';
 import restaurantRouter from './src/routes/restaurantRoute.js';
+import defaultItemRoutes from './src/routes/defaultItemRoutes.js';
+import categoryItemRoutes from './src/routes/categoryItemRoutes.js';
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api/defaultItems', defaultItemRoutes);
+app.use('/api/categoryItems', categoryItemRoutes);
+
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
