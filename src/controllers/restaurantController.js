@@ -1,3 +1,4 @@
+import db from "../config/db.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -20,6 +21,7 @@ const Restaurant = model.Restaurant;
 const RestaurantDocument = model.RestaurantDocument;
 
 export const registerRestaurant = async (req, res) => {
+  const transaction = await db.transaction();
   try {
     const { name, address, email, phoneNumber, password } = req.body;
     const image = req.files?.image?.[0];
@@ -63,14 +65,14 @@ export const registerRestaurant = async (req, res) => {
       isVerified: false,
       isActive: false,
       status: STATUS.PENDING,
-    });
+    },{transaction});
 
     await RestaurantDocument.create({
       restaurantId: restaurant.id,
       userPicture: userPicture,
       userDocument: userDocument,
       restaurantDocument: restaurantDocument,
-    });
+    },{transaction});
 
     sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
@@ -82,6 +84,7 @@ export const registerRestaurant = async (req, res) => {
         ),
       );
   } catch (error) {
+    await transaction.rollback();
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
