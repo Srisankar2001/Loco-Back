@@ -1,28 +1,23 @@
 import { DataTypes } from "sequelize";
 import db from "../config/db.js";
 
-const Route = db.define(
-  "Route",
+const LineStation = db.define(
+  "LineStation",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
+    lineOrder: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    isReverse: {
-      type : DataTypes.BOOLEAN,
-      allowNull:false,
-      defaultValue:false
-    }
   },
   {
-    tableName: "route",
+    tableName: "line_station",
     timestamps: true,
   },
 );
 
-export default Route;
+export default LineStation;

@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 import db from "../config/db.js";
 
-const Station = db.define(
-  "Station",
+const Line = db.define(
+  "Line",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -12,20 +12,12 @@ const Station = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    locationLongitude: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    locationLatitude: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    }
   },
   {
-    tableName: "station",
+    tableName: "Line",
     timestamps: true,
   },
 );
 
-export default Station;
+export default Line;

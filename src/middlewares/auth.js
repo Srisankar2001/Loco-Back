@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken'
-import { clientErrorResponse } from '../dto/response.js';
+import jwt from "jsonwebtoken";
+import { clientErrorResponse } from "../dto/response.js";
 
 export const adminAuth = async (req, res, next) => {
   try {
@@ -22,11 +22,8 @@ export const adminAuth = async (req, res, next) => {
     req.id = decoded.id;
 
     next();
-
   } catch (error) {
-    return res
-      .status(401)
-      .json(clientErrorResponse("Authentication failed."));
+    return res.status(401).json(clientErrorResponse("Authentication failed."));
   }
 };
 
@@ -51,11 +48,8 @@ export const userAuth = async (req, res, next) => {
     req.id = decoded.id;
 
     next();
-
   } catch (error) {
-    return res
-      .status(401)
-      .json(clientErrorResponse("Authentication failed."));
+    return res.status(401).json(clientErrorResponse("Authentication failed."));
   }
 };
 
@@ -80,13 +74,10 @@ export const pickupPersonAuth = async (req, res, next) => {
     req.id = decoded.id;
 
     next();
-
   } catch (error) {
-    return res
-      .status(401)
-      .json(clientErrorResponse("Authentication failed."));
+    return res.status(401).json(clientErrorResponse("Authentication failed."));
   }
-}; 
+};
 
 export const deliveryPersonAuth = async (req, res, next) => {
   try {
@@ -109,13 +100,10 @@ export const deliveryPersonAuth = async (req, res, next) => {
     req.id = decoded.id;
 
     next();
-
   } catch (error) {
-    return res
-      .status(401)
-      .json(clientErrorResponse("Authentication failed."));
+    return res.status(401).json(clientErrorResponse("Authentication failed."));
   }
-}; 
+};
 
 export const restaurantAuth = async (req, res, next) => {
   try {
@@ -138,10 +126,7 @@ export const restaurantAuth = async (req, res, next) => {
     req.id = decoded.id;
 
     next();
-
   } catch (error) {
-    return res
-      .status(401)
-      .json(clientErrorResponse("Authentication failed."));
+    return res.status(401).json(clientErrorResponse("Authentication failed."));
   }
 };
