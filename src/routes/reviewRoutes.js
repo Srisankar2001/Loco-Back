@@ -33,6 +33,9 @@ import { createReview, deleteReview, getAllReviews, getReviewById, getReviewsByR
  *     responses:
  *       201:
  *         description: Review created successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/SuccessResponse' }
  *       400:
  *         description: Bad request
  */
@@ -54,6 +57,9 @@ router.post('/', createReview); // open to user
  *     responses:
  *       200:
  *         description: Review data
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Review' }
  *       404:
  *         description: Review not found
  */
@@ -75,6 +81,11 @@ router.get('/:id', getReviewById); //open to all roles
  *     responses:
  *       200:
  *         description: List of reviews for the restaurant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Review' }
  */
 router.get('/restaurant/:restaurantId', getReviewsByRestaurantId); //open to all roles  
 
@@ -105,6 +116,9 @@ router.get('/restaurant/:restaurantId', getReviewsByRestaurantId); //open to all
  *     responses:
  *       200:
  *         description: Reply added successfully
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/SuccessResponse' }
  *       400:
  *         description: Bad request
  *       404:
@@ -122,6 +136,11 @@ router.patch('/:id/reply', replyToReview); //open to vendor
  *     responses:
  *       200:
  *         description: List of reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Review' }
  */
 router.get('/', getAllReviews); //open to all roles
 
@@ -129,7 +148,7 @@ router.get('/', getAllReviews); //open to all roles
 
 /**
  * @openapi
- * /api/reviews:
+ * /api/reviews/{id}:
  *   delete:
  *     tags:
  *       - Reviews
