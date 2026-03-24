@@ -32,11 +32,110 @@ const router = express.Router();
 
 // const upload = multer({ storage: storage });
 
+/**
+ * @openapi
+ * /api/defaultItems/bulk:
+ *   post:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Create multiple default items
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       201:
+ *         description: Created successfully
+ */
 router.post("/bulk", upload.array("images"), createMultipleDefaultItems);
+
+/**
+ * @openapi
+ * /api/defaultItems/bulk:
+ *   get:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Get default items
+ *     responses:
+ *       200:
+ *         description: List of default items
+ */
 router.get("/bulk", getDefaultItems);
+
+/**
+ * @openapi
+ * /api/defaultItems/{id}:
+ *   get:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Get default item by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Default item data
+ */
 router.get("/:id", getDefaultItemById);
+
 // Toggle soft delete / restore
+/**
+ * @openapi
+ * /api/defaultItems/{id}/toggle:
+ *   patch:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Toggle soft delete status
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Toggled successfully
+ */
 router.patch("/:id/toggle", toggleDeletion);
+
+/**
+ * @openapi
+ * /api/defaultItems/{id}:
+ *   put:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Update default item
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       200:
+ *         description: Updated successfully
+ */
 router.put("/:id", upload.array("images"), updateDefaultItem);
 
 export default router; 
