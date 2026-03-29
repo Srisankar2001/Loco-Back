@@ -70,6 +70,7 @@ export const createLineStations = async (req, res) => {
       .status(201)
       .json(successResponse("Line stations created successfully."));
   } catch (error) {
+    await transaction.rollback()
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));

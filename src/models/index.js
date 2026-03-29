@@ -36,32 +36,17 @@ Restaurant.belongsTo(Admin, { foreignKey: "adminId" });
 Restaurant.hasMany(Item, { foreignKey: "restaurantId" });
 Item.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 
-User.hasMany(Order, { foreignKey: "userId" });
-Order.belongsTo(User, { foreignKey: "userId" });
-
 User.hasMany(Review, { foreignKey: "userId" });
 Review.belongsTo(User, { foreignKey: "userId" });
 
 User.hasMany(Payment, { foreignKey: "userId" });
 Payment.belongsTo(User, { foreignKey: "userId" });
 
-Order.hasMany(OrderItem, { foreignKey: "orderId" });
-OrderItem.belongsTo(Order, { foreignKey: "orderId" });
-
 OrderItem.belongsTo(Item, { foreignKey: "itemId" });
 Item.hasMany(OrderItem, { foreignKey: "itemId" });
 
 Review.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 Restaurant.hasMany(Review, { foreignKey: "restaurantId" });
-
-PickupPerson.hasMany(Order, { foreignKey: "pickupPersonId" });
-Order.belongsTo(PickupPerson, { foreignKey: "pickupPersonId" });
-
-DeliveryPerson.hasMany(Order, { foreignKey: "deliveryPersonId" });
-Order.belongsTo(DeliveryPerson, { foreignKey: "deliveryPersonId" });
-
-Order.belongsTo(Station, { as: "station", foreignKey: "stationId" });
-Order.belongsTo(Train, { foreignKey: "trainId" });
 
 Line.belongsTo(Station, { foreignKey: "startStationId", as: "startStation" });
 Line.belongsTo(Station, { foreignKey: "endStationId", as: "endStation" });
@@ -94,6 +79,40 @@ StationStop.belongsTo(Schedule, { foreignKey: "scheduleId", as: "schedule" });
 
 itemCategory.hasMany(defaultItem, { foreignKey: "categoryId" });
 defaultItem.belongsTo(itemCategory, { foreignKey: "categoryId" });
+
+// User
+User.hasMany(Order, { foreignKey: "userId", as: "orders" });
+Order.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// Restaurant
+Restaurant.hasMany(Order, { foreignKey: "restaurantId", as: "orders" });
+Order.belongsTo(Restaurant, { foreignKey: "restaurantId", as: "restaurant" });
+
+// Pickup
+PickupPerson.hasMany(Order, { foreignKey: "pickupPersonId", as: "pickupOrders" });
+Order.belongsTo(PickupPerson, { foreignKey: "pickupPersonId", as: "pickupPerson" });
+
+// Delivery
+DeliveryPerson.hasMany(Order, { foreignKey: "deliveryPersonId", as: "deliveryOrders" });
+Order.belongsTo(DeliveryPerson, { foreignKey: "deliveryPersonId", as: "deliveryPerson" });
+
+// Station
+Station.hasMany(Order, { foreignKey: "stationId", as: "orders" });
+Order.belongsTo(Station, { foreignKey: "stationId", as: "station" });
+
+// Train
+Train.hasMany(Order, { foreignKey: "trainId", as: "orders" });
+Order.belongsTo(Train, { foreignKey: "trainId", as: "train" });
+
+// Order Items
+Order.hasMany(OrderItem, { foreignKey: "orderId", as: "items" });
+OrderItem.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+OrderItem.belongsTo(Item, { foreignKey: "itemId", as: "item" });
+Item.hasMany(OrderItem, { foreignKey: "itemId", as: "orderItems" });
+
+Restaurant.hasMany(Item, { foreignKey: "restaurantId" });
+Item.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 
 export default {
   Admin,

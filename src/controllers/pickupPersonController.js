@@ -74,6 +74,8 @@ export const registerPickupPerson = async (req, res) => {
       vehicleDocument: vehicleDocument,
     },{transaction});
 
+     await transaction.commit(); 
+     
     sendVerifyMailPickupPerson(normalizedEmail, verifyToken);
 
     return res
@@ -208,6 +210,7 @@ export const verifyPickupPerson = async (req, res) => {
     pickupPerson.verifyToken = null;
     pickupPerson.verifyTokenExpires = null;
     pickupPerson.isVerified = true;
+    pickupPerson.status = STATUS.APPROVED
 
     await pickupPerson.save();
 

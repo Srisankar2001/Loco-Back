@@ -15,6 +15,8 @@ import deliveryPersonRouter from "./src/routes/deliveryPersonRoute.js";
 import restaurantRouter from "./src/routes/restaurantRoute.js";
 import defaultItemRoutes from "./src/routes/defaultItemRoutes.js";
 import categoryItemRoutes from "./src/routes/categoryItemRoutes.js";
+import orderRoutes from "./src/routes/orderRoute.js"
+import itemRoutes from "./src/routes/itemRoute.js"
 
 import lineRoute from "./src/routes/lineRoute.js";
 import stationRoute from "./src/routes/stationRoute.js";
@@ -23,6 +25,7 @@ import trainRoute from "./src/routes/trainRoute.js";
 import lineStationRoute from "./src/routes/lineStationRoute.js";
 import scheduleRoute from "./src/routes/scheduleRoute.js";
 import stationStopRoute from "./src/routes/stationStopRoute.js";
+
 
 dotenv.config();
 
@@ -47,6 +50,8 @@ app.use("/train", trainRoute);
 app.use("/line-station", lineStationRoute);
 app.use("/schedule", scheduleRoute);
 app.use("/station-stop", stationStopRoute);
+app.use("/order",orderRoutes)
+app.use("/item",itemRoutes)
 
 // Routes
 app.use("/api/reviews", reviewRoutes);
