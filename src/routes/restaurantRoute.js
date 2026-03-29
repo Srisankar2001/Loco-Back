@@ -14,32 +14,37 @@ const router = express.Router();
 
 /**
  * @openapi
+ * tags:
+ *   name: Restaurants
+ *   description: Restaurant management and authentication
+ */
+
+/**
+ * @openapi
  * /restaurant/register:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Register Restaurant
+ *     tags: [Restaurants]
+ *     summary: Register a new restaurant
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required: [name, address, email, phoneNumber, password]
  *             properties:
- *               userPicture:
- *                 type: string
- *                 format: binary
- *               userDocument:
- *                 type: string
- *                 format: binary
- *               restaurantDocument:
- *                 type: string
- *                 format: binary
- *               image:
- *                 type: string
- *                 format: binary
+ *               name: { type: string }
+ *               address: { type: string }
+ *               email: { type: string }
+ *               phoneNumber: { type: string }
+ *               password: { type: string }
+ *               userPicture: { type: string, format: binary }
+ *               userDocument: { type: string, format: binary }
+ *               restaurantDocument: { type: string, format: binary }
+ *               image: { type: string, format: binary }
  *     responses:
  *       201:
- *         description: Registered successfully
+ *         description: Restaurant registered successfully
  */
 router.post(
   "/register",
@@ -56,23 +61,29 @@ router.post(
  * @openapi
  * /restaurant/login:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Login Restaurant
+ *     tags: [Restaurants]
+ *     summary: Restaurant login
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [email, password]
  *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
+ *               email: { type: string }
+ *               password: { type: string }
  *     responses:
  *       200:
- *         description: Logged in successfully
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data: { type: string, description: 'JWT Token' }
  */
 router.post("/login", loginRestaurant);
 
@@ -80,18 +91,16 @@ router.post("/login", loginRestaurant);
  * @openapi
  * /restaurant/verify-token/{token}:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Verify Token
+ *     tags: [Restaurants]
+ *     summary: Verify restaurant email token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema:
- *           type: string
+ *         schema: { type: string }
  *     responses:
  *       200:
- *         description: Token verified
+ *         description: Email verified
  */
 router.post("/verify-token/:token", verifyRestaurant);
 
@@ -99,12 +108,17 @@ router.post("/verify-token/:token", verifyRestaurant);
  * @openapi
  * /restaurant/verify:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Send Verify Token
- *     responses:
- *       200:
- *         description: Verify token sent
+ *     tags: [Restaurants]
+ *     summary: Resend verification token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string }
  */
 router.post("/verify", sendVerifyTokenRestaurant);
 
@@ -112,18 +126,22 @@ router.post("/verify", sendVerifyTokenRestaurant);
  * @openapi
  * /restaurant/reset-token/{token}:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Reset Password via Token
+ *     tags: [Restaurants]
+ *     summary: Reset restaurant password with token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Password reset successfully
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password: { type: string }
  */
 router.post("/reset-token/:token", resetPasswordRestaurant);
 
@@ -131,12 +149,17 @@ router.post("/reset-token/:token", resetPasswordRestaurant);
  * @openapi
  * /restaurant/reset:
  *   post:
- *     tags:
- *       - Restaurant
- *     summary: Send Reset Password Token
- *     responses:
- *       200:
- *         description: Reset token sent
+ *     tags: [Restaurants]
+ *     summary: Send password reset link
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string }
  */
 router.post("/reset", sendResetPasswordTokenRestaurant);
 
@@ -144,27 +167,22 @@ router.post("/reset", sendResetPasswordTokenRestaurant);
  * @openapi
  * /restaurant/update-document:
  *   put:
- *     tags:
- *       - Restaurant
- *     summary: Update Restaurant Documents
+ *     tags: [Restaurants]
+ *     summary: Update restaurant documents
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
- *               userPicture:
- *                 type: string
- *                 format: binary
- *               userDocument:
- *                 type: string
- *                 format: binary
- *               restaurantDocument:
- *                 type: string
- *                 format: binary
+ *               userPicture: { type: string, format: binary }
+ *               userDocument: { type: string, format: binary }
+ *               restaurantDocument: { type: string, format: binary }
  *     responses:
  *       200:
- *         description: Documents updated successfully
+ *         description: Documents updated
  */
 router.put(
   "/update-document",
