@@ -23,13 +23,13 @@ const RestaurantDocument = model.RestaurantDocument;
 export const registerRestaurant = async (req, res) => {
   const transaction = await db.transaction();
   try {
-    const { name, address, email, phoneNumber, password } = req.body;
-    const image = req.files?.image?.[0];
+    const { name, address, email, phoneNumber, password, locationLongitude , locationLatitude } = req.body;
+    const image = req.files?.image?.[0]?.filename;
     const userPicture = req.files?.userPicture?.[0]?.filename;
     const userDocument = req.files?.userDocument?.[0]?.filename;
     const restaurantDocument = req.files?.restaurantDocument?.[0]?.filename;
 
-    if (!name || !address || !email || !phoneNumber || !password) {
+    if (!name || !address || !email || !phoneNumber || !password || !locationLongitude || !locationLatitude) {
       return res
         .status(400)
         .json(clientErrorResponse("All fields are required."));
@@ -60,6 +60,8 @@ export const registerRestaurant = async (req, res) => {
       email: normalizedEmail,
       phoneNumber,
       password: hashedPassword,
+      locationLatitude:locationLatitude,
+      locationLongitude:locationLongitude,
       verifyToken,
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
@@ -74,6 +76,8 @@ export const registerRestaurant = async (req, res) => {
       restaurantDocument: restaurantDocument,
     },{transaction});
 
+     await transaction.commit(); 
+     
     sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
     return res
@@ -85,6 +89,7 @@ export const registerRestaurant = async (req, res) => {
       );
   } catch (error) {
     await transaction.rollback();
+    console.log(error)
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
@@ -208,6 +213,7 @@ export const verifyRestaurant = async (req, res) => {
     restaurant.verifyToken = null;
     restaurant.verifyTokenExpires = null;
     restaurant.isVerified = true;
+    restaurant.status = STATUS.APPROVED
 
     await restaurant.save();
 

@@ -4,7 +4,7 @@ import { adminAuth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-router.post('/register', registerAdmin);
+router.post('/register',adminAuth, registerAdmin);
 router.post('/login', loginAdmin);
 
 router.post('/verify-token/:token', verifyAdmin);

@@ -35,15 +35,15 @@ export const registerDeliveryPerson = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    // const existingDeliveryPerson = await DeliveryPerson.findOne({
-    //   where: { email: normalizedEmail },
-    // });
+    const existingDeliveryPerson = await DeliveryPerson.findOne({
+      where: { email: normalizedEmail },
+    });
 
-    // if (existingDeliveryPerson) {
-    //   return res
-    //     .status(409)
-    //     .json(clientErrorResponse("Email is already registered."));
-    // }
+    if (existingDeliveryPerson) {
+      return res
+        .status(409)
+        .json(clientErrorResponse("Email is already registered."));
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -206,6 +206,7 @@ export const verifyDeliveryPerson = async (req, res) => {
     deliveryPerson.verifyToken = null;
     deliveryPerson.verifyTokenExpires = null;
     deliveryPerson.isVerified = true;
+    deliveryPerson.status = STATUS.APPROVED;
 
     await deliveryPerson.save();
 
