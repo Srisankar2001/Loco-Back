@@ -1,3 +1,4 @@
+import db from "../config/db.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -20,6 +21,7 @@ const PickupPerson = model.PickupPerson;
 const PickupPersonDocument = model.PickupPersonDocument;
 
 export const registerPickupPerson = async (req, res) => {
+  const transaction = await db.transaction();
   try {
     const { firstname, lastname, email, phoneNumber, password } = req.body;
     const userPicture = req.files?.userPicture?.[0]?.filename;
@@ -62,7 +64,7 @@ export const registerPickupPerson = async (req, res) => {
       isVerified: false,
       isActive: false,
       status: STATUS.PENDING,
-    });
+    },{transaction});
 
     await PickupPersonDocument.create({
       pickupPersonId: pickupPerson.id,
@@ -70,8 +72,10 @@ export const registerPickupPerson = async (req, res) => {
       userDocument: userDocument,
       vehiclePicture: vehiclePicture,
       vehicleDocument: vehicleDocument,
-    });
+    },{transaction});
 
+     await transaction.commit(); 
+     
     sendVerifyMailPickupPerson(normalizedEmail, verifyToken);
 
     return res
@@ -82,6 +86,7 @@ export const registerPickupPerson = async (req, res) => {
         ),
       );
   } catch (error) {
+    await transaction.rollback();
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
@@ -205,6 +210,7 @@ export const verifyPickupPerson = async (req, res) => {
     pickupPerson.verifyToken = null;
     pickupPerson.verifyTokenExpires = null;
     pickupPerson.isVerified = true;
+    pickupPerson.status = STATUS.APPROVED
 
     await pickupPerson.save();
 

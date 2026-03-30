@@ -1,3 +1,4 @@
+import db from "../config/db.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -20,6 +21,7 @@ const DeliveryPerson = model.DeliveryPerson;
 const DeliveryPersonDocument = model.DeliveryPersonDocument;
 
 export const registerDeliveryPerson = async (req, res) => {
+  const transaction = await db.transaction();
   try {
     const { firstname, lastname, email, phoneNumber, password } = req.body;
     const userPicture = req.files?.userPicture?.[0]?.filename;
@@ -33,15 +35,15 @@ export const registerDeliveryPerson = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    // const existingDeliveryPerson = await DeliveryPerson.findOne({
-    //   where: { email: normalizedEmail },
-    // });
+    const existingDeliveryPerson = await DeliveryPerson.findOne({
+      where: { email: normalizedEmail },
+    });
 
-    // if (existingDeliveryPerson) {
-    //   return res
-    //     .status(409)
-    //     .json(clientErrorResponse("Email is already registered."));
-    // }
+    if (existingDeliveryPerson) {
+      return res
+        .status(409)
+        .json(clientErrorResponse("Email is already registered."));
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -60,13 +62,15 @@ export const registerDeliveryPerson = async (req, res) => {
       isVerified: false,
       isActive: false,
       status: STATUS.PENDING,
-    });
+    },{ transaction });
 
     await DeliveryPersonDocument.create({
       deliveryPersonId: deliveryPerson.id,
       userPicture: userPicture,
       userDocument: userDocument,
-    });
+    },{ transaction });
+
+    await transaction.commit();
 
     sendVerifyMailDeliveryPerson(normalizedEmail, verifyToken);
 
@@ -78,6 +82,7 @@ export const registerDeliveryPerson = async (req, res) => {
         ),
       );
   } catch (error) {
+    await transaction.rollback();
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
@@ -201,6 +206,7 @@ export const verifyDeliveryPerson = async (req, res) => {
     deliveryPerson.verifyToken = null;
     deliveryPerson.verifyTokenExpires = null;
     deliveryPerson.isVerified = true;
+    deliveryPerson.status = STATUS.APPROVED;
 
     await deliveryPerson.save();
 

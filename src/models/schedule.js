@@ -1,31 +1,28 @@
-import { DataTypes } from 'sequelize';
-import db from '../config/db.js';
+import { DataTypes } from "sequelize";
+import db from "../config/db.js";
 
-const Schedule = db.define('Schedule', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+const Schedule = db.define(
+  "Schedule",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    day: {
+      type: DataTypes.JSON,
+      allowNull:false
+    },
+    dayOffset: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   },
-  startDate: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
+  {
+    tableName: "schedule",
+    timestamps: true,
   },
-  startTime: {
-    type: DataTypes.TIME,
-    allowNull: false
-  },
-  endDate: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
-  },
-  endTime: {
-    type: DataTypes.TIME,
-    allowNull: false
-  }
-}, {
-  tableName: 'schedule',
-  timestamps: false
-});
+);
 
 export default Schedule;

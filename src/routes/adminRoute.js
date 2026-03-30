@@ -6,36 +6,20 @@ const router = express.Router();
 
 /**
  * @openapi
- * tags:
- *   name: Admins
- *   description: Admin management and authentication
- */
-
-/**
- * @openapi
  * /admin/register:
  *   post:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Register a new admin
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [firstname, lastname, email, password, phoneNumber]
- *             properties:
- *               firstname: { type: string }
- *               lastname: { type: string }
- *               email: { type: string }
- *               password: { type: string }
- *               phoneNumber: { type: string }
+ *             $ref: '#/components/schemas/Admin'
  *     responses:
  *       201:
  *         description: Admin registered successfully
- *         content:
- *           application/json:
- *             schema: { $ref: '#/components/schemas/SuccessResponse' }
  */
 router.post('/register', registerAdmin);
 
@@ -43,29 +27,28 @@ router.post('/register', registerAdmin);
  * @openapi
  * /admin/login:
  *   post:
- *     tags: [Admins]
- *     summary: Admin login
+ *     tags:
+ *       - Admin
+ *     summary: Login admin
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, password]
+ *             required:
+ *               - email
+ *               - password
  *             properties:
- *               email: { type: string }
- *               password: { type: string }
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/SuccessResponse'
- *                 - type: object
- *                   properties:
- *                     data: { type: string, description: 'JWT Token' }
+ *         description: Logged in successfully
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/login', loginAdmin);
 
@@ -73,16 +56,18 @@ router.post('/login', loginAdmin);
  * @openapi
  * /admin/verify-token/{token}:
  *   post:
- *     tags: [Admins]
- *     summary: Verify admin email token
+ *     tags:
+ *       - Admin
+ *     summary: Verify token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Email verified
+ *         description: Token verified
  */
 router.post('/verify-token/:token', verifyAdmin);
 
@@ -90,40 +75,31 @@ router.post('/verify-token/:token', verifyAdmin);
  * @openapi
  * /admin/verify:
  *   post:
- *     tags: [Admins]
- *     summary: Resend verification token
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email: { type: string }
+ *     tags:
+ *       - Admin
+ *     summary: Send verify token
+ *     responses:
+ *       200:
+ *         description: Token sent
  */
-router.post('/verify', sendVerifyTokenAdmin)
+router.post('/verify',sendVerifyTokenAdmin)
 
 /**
  * @openapi
  * /admin/reset-token/{token}:
  *   post:
- *     tags: [Admins]
- *     summary: Reset admin password with token
+ *     tags:
+ *       - Admin
+ *     summary: Reset password via token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema: { type: string }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [password]
- *             properties:
- *               password: { type: string }
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
  */
 router.post('/reset-token/:token', resetPasswordAdmin);
 
@@ -131,17 +107,12 @@ router.post('/reset-token/:token', resetPasswordAdmin);
  * @openapi
  * /admin/reset:
  *   post:
- *     tags: [Admins]
- *     summary: Send password reset link
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email: { type: string }
+ *     tags:
+ *       - Admin
+ *     summary: Send password reset token
+ *     responses:
+ *       200:
+ *         description: Reset token sent
  */
 router.post('/reset', sendResetPasswordTokenAdmin);
 
@@ -149,271 +120,217 @@ router.post('/reset', sendResetPasswordTokenAdmin);
  * @openapi
  * /admin/admin:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get all admins
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of admins
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/Admin' }
  */
-router.get('/admin', adminAuth, getAllAdmin)
+router.get('/admin',adminAuth,getAllAdmin)
 
 /**
  * @openapi
  * /admin/admin/{userId}:
  *   put:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Update admin status
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [isActive]
- *             properties:
- *               isActive: { type: boolean }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Status updated
  */
-router.put('/admin/:userId', adminAuth, updateAdminStatus)
+router.put('/admin/:userId',adminAuth,updateAdminStatus)
 
 /**
  * @openapi
  * /admin/user:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get all users
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/User' }
  */
-router.get('/user', adminAuth, getAllUser)
+router.get('/user',adminAuth,getAllUser)
 
 /**
  * @openapi
  * /admin/user/{userId}:
  *   put:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Update user status
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [isActive]
- *             properties:
- *               isActive: { type: boolean }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Status updated
  */
-router.put('/user/:userId', adminAuth, updateUserStatus)
+router.put('/user/:userId',adminAuth,updateUserStatus)
 
 /**
  * @openapi
  * /admin/delivery-person:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get all delivery persons
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of delivery persons
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/DeliveryPerson' }
  */
-router.get('/delivery-person', adminAuth, getAllDeliveryPerson)
+router.get('/delivery-person',adminAuth,getAllDeliveryPerson)
 
 /**
  * @openapi
  * /admin/delivery-document/{userId}:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get delivery person document
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Document data
  */
-router.get('/delivery-document/:userId', adminAuth, getDeliveryPersonDocument)
+router.get('/delivery-document/:userId',adminAuth,getDeliveryPersonDocument)
 
 /**
  * @openapi
  * /admin/delivery-person/{userId}:
  *   put:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Update delivery person status
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status, reason]
- *             properties:
- *               status: { type: string, enum: [APPROVED, REJECTED] }
- *               reason: { type: string }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Status updated
  */
-router.put('/delivery-person/:userId', adminAuth, updateDeliveryPersonStatus)
+router.put('/delivery-person/:userId',adminAuth,updateDeliveryPersonStatus)
 
 /**
  * @openapi
  * /admin/pickup-person:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get all pickup persons
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of pickup persons
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/PickupPerson' }
  */
-router.get('/pickup-person', adminAuth, getAllPickupPerson)
+router.get('/pickup-person',adminAuth,getAllPickupPerson)
 
 /**
  * @openapi
  * /admin/pickup-document/{userId}:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get pickup person document
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Document data
  */
-router.get('/pickup-document/:userId', adminAuth, getPickupPersonDocument)
+router.get('/pickup-document/:userId',adminAuth,getPickupPersonDocument)
 
 /**
  * @openapi
  * /admin/pickup-person/{userId}:
  *   put:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Update pickup person status
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status, reason]
- *             properties:
- *               status: { type: string, enum: [APPROVED, REJECTED] }
- *               reason: { type: string }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Status updated
  */
-router.put('/pickup-person/:userId', adminAuth, updatePickupPersonStatus)
+router.put('/pickup-person/:userId',adminAuth,updatePickupPersonStatus)
 
 /**
  * @openapi
  * /admin/restaurant:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get all restaurants
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of restaurants
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/Restaurant' }
  */
-router.get('/restaurant', adminAuth, getAllRestaurant)
+router.get('/restaurant',adminAuth,getAllRestaurant)
 
 /**
  * @openapi
  * /admin/restaurant-document/{userId}:
  *   get:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Get restaurant document
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Document data
  */
-router.get('/restaurant-document/:userId', adminAuth, getRestaurantDocument)
+router.get('/restaurant-document/:userId',adminAuth,getRestaurantDocument)
 
 /**
  * @openapi
  * /admin/restaurant/{userId}:
  *   put:
- *     tags: [Admins]
+ *     tags:
+ *       - Admin
  *     summary: Update restaurant status
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: integer }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status, reason]
- *             properties:
- *               status: { type: string, enum: [APPROVED, REJECTED] }
- *               reason: { type: string }
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Status updated
  */
-router.put('/restaurant/:userId', adminAuth, updateRestaurantStatus)
+router.put('/restaurant/:userId',adminAuth,updateRestaurantStatus)
 
 export default router;

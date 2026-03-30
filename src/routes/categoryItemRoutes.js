@@ -33,16 +33,10 @@ const router = express.Router();
 
 /**
  * @openapi
- * tags:
- *   name: ItemCategories
- *   description: Category management for items
- */
-
-/**
- * @openapi
  * /api/categoryItems:
  *   post:
- *     tags: [ItemCategories]
+ *     tags:
+ *       - CategoryItems
  *     summary: Create multiple item categories
  *     requestBody:
  *       content:
@@ -50,11 +44,14 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               names: { type: array, items: { type: string } }
- *               images: { type: array, items: { type: string, format: binary } }
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       201:
- *         description: Categories created
+ *         description: Created successfully
  */
 router.post("/", upload.array("images"), createMultipleItemCategories);
 
@@ -62,7 +59,8 @@ router.post("/", upload.array("images"), createMultipleItemCategories);
  * @openapi
  * /api/categoryItems:
  *   get:
- *     tags: [ItemCategories]
+ *     tags:
+ *       - CategoryItems
  *     summary: Get all item categories
  *     responses:
  *       200:
@@ -74,13 +72,15 @@ router.get("/", getItemCategories);
  * @openapi
  * /api/categoryItems/{id}:
  *   get:
- *     tags: [ItemCategories]
+ *     tags:
+ *       - CategoryItems
  *     summary: Get item category by ID
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Category data
@@ -91,16 +91,18 @@ router.get("/:id", getItemCategoryById);
  * @openapi
  * /api/categoryItems/{id}:
  *   delete:
- *     tags: [ItemCategories]
- *     summary: Delete item category
+ *     tags:
+ *       - CategoryItems
+ *     summary: Hard delete a category
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
- *         description: Category deleted
+ *         description: Deleted successfully
  */
 router.delete("/:id", hardDeleteItemCategory);
 

@@ -28,11 +28,11 @@ export const registerAdmin = async (req, res) => {
     const id = req.id;
     const { firstname, lastname, email, phoneNumber, password } = req.body;
 
-    // if (!id) {
-    //   return res
-    //     .status(401)
-    //     .json(clientErrorResponse("Unauthorized. User ID not found."));
-    // }
+    if (!id) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Unauthorized. User ID not found."));
+    }
 
     if (!firstname || !lastname || !email || !phoneNumber || !password) {
       return res

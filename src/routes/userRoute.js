@@ -5,37 +5,22 @@ const router = express.Router();
 
 /**
  * @openapi
- * tags:
- *   name: Users
- *   description: User management and authentication
- */
-
-/**
- * @openapi
  * /user/register:
  *   post:
- *     tags: [Users]
+ *     tags:
+ *       - User
  *     summary: Register a new user
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [firstname, lastname, email, phoneNumber, password]
- *             properties:
- *               firstname: { type: string }
- *               lastname: { type: string }
- *               email: { type: string }
- *               phoneNumber: { type: string }
- *               password: { type: string }
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
  *         description: Bad request
- *       409:
- *         description: Email already exists
  */
 router.post('/register', registerUser);
 
@@ -43,31 +28,28 @@ router.post('/register', registerUser);
  * @openapi
  * /user/login:
  *   post:
- *     tags: [Users]
- *     summary: User login
+ *     tags:
+ *       - User
+ *     summary: Login user
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, password]
+ *             required:
+ *               - email
+ *               - password
  *             properties:
- *               email: { type: string }
- *               password: { type: string }
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/SuccessResponse'
- *                 - type: object
- *                   properties:
- *                     data: { type: string, description: 'JWT Token' }
+ *         description: Logged in successfully
  *       401:
- *         description: Invalid credentials
+ *         description: Unauthorized
  */
 router.post('/login', loginUser);
 
@@ -75,18 +57,18 @@ router.post('/login', loginUser);
  * @openapi
  * /user/verify-token/{token}:
  *   post:
- *     tags: [Users]
- *     summary: Verify user email token
+ *     tags:
+ *       - User
+ *     summary: Verify token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Email verified
- *       401:
- *         description: Invalid or expired token
+ *         description: Token verified
  */
 router.post('/verify-token/:token', verifyUser);
 
@@ -94,22 +76,12 @@ router.post('/verify-token/:token', verifyUser);
  * @openapi
  * /user/verify:
  *   post:
- *     tags: [Users]
- *     summary: Send verify token to user
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email: { type: string }
+ *     tags:
+ *       - User
+ *     summary: Send verify token
  *     responses:
  *       200:
- *         description: Token sent successfully
- *       401:
- *         description: Invalid or expired token
+ *         description: Token sent
  */
 router.post('/verify',sendVerifyTokenUser)
 
@@ -117,25 +89,18 @@ router.post('/verify',sendVerifyTokenUser)
  * @openapi
  * /user/reset-token/{token}:
  *   post:
- *     tags: [Users]
- *     summary: Reset user password with token
+ *     tags:
+ *       - User
+ *     summary: Reset password via token
  *     parameters:
  *       - in: path
  *         name: token
  *         required: true
- *         schema: { type: string }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [password]
- *             properties:
- *               password: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Password reset successful
+ *         description: Password reset successfully
  */
 router.post('/reset-token/:token', resetPasswordUser);
 
@@ -143,20 +108,12 @@ router.post('/reset-token/:token', resetPasswordUser);
  * @openapi
  * /user/reset:
  *   post:
- *     tags: [Users]
- *     summary: Send password reset link
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email: { type: string }
+ *     tags:
+ *       - User
+ *     summary: Send password reset token
  *     responses:
  *       200:
- *         description: Reset link sent
+ *         description: Reset token sent
  */
 router.post('/reset', sendResetPasswordTokenUser);
 
