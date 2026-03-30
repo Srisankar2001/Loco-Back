@@ -16,9 +16,22 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - trainId
+ *               - routeId
+ *               - day
+ *               - dayOffset
  *             properties:
- *               time:
- *                 type: string
+ *               trainId:
+ *                 type: integer
+ *               routeId:
+ *                 type: integer
+ *               day:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               dayOffset:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Schedule created successfully
@@ -45,8 +58,16 @@ router.post('/create', createSchedule);
  *           schema:
  *             type: object
  *             properties:
- *               time:
- *                 type: string
+ *               trainId:
+ *                 type: integer
+ *               routeId:
+ *                 type: integer
+ *               day:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               dayOffset:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Schedule updated successfully

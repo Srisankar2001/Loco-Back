@@ -16,8 +16,13 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - type
  *             properties:
  *               name:
+ *                 type: string
+ *               type:
  *                 type: string
  *     responses:
  *       201:
@@ -46,6 +51,8 @@ router.post('/create', createTrain);
  *             type: object
  *             properties:
  *               name:
+ *                 type: string
+ *               type:
  *                 type: string
  *     responses:
  *       200:

@@ -39,11 +39,18 @@ const router = express.Router();
  *       - CategoryItems
  *     summary: Create multiple item categories
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - itemCategories
+ *               - images
  *             properties:
+ *               itemCategories:
+ *                 type: string
+ *                 description: JSON stringified array of category objects with `name`, optional `description`, and optional `isAvailable`.
  *               images:
  *                 type: array
  *                 items:

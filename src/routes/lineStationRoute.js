@@ -20,13 +20,24 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - lineId
+ *               - stations
  *             properties:
  *               lineId:
  *                 type: integer
- *               stationIds:
+ *               stations:
  *                 type: array
  *                 items:
- *                   type: integer
+ *                   type: object
+ *                   required:
+ *                     - stationId
+ *                     - lineOrder
+ *                   properties:
+ *                     stationId:
+ *                       type: integer
+ *                     lineOrder:
+ *                       type: integer
  *     responses:
  *       201:
  *         description: Line stations created

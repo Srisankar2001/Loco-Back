@@ -16,9 +16,17 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - locationLongitude
+ *               - locationLatitude
  *             properties:
  *               name:
  *                 type: string
+ *               locationLongitude:
+ *                 type: number
+ *               locationLatitude:
+ *                 type: number
  *     responses:
  *       201:
  *         description: Station created successfully
@@ -47,6 +55,10 @@ router.post('/create', createStation);
  *             properties:
  *               name:
  *                 type: string
+ *               locationLongitude:
+ *                 type: number
+ *               locationLatitude:
+ *                 type: number
  *     responses:
  *       200:
  *         description: Station updated successfully

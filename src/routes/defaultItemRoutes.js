@@ -40,11 +40,18 @@ const router = express.Router();
  *       - DefaultItems
  *     summary: Create multiple default items
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - items
+ *               - images
  *             properties:
+ *               items:
+ *                 type: string
+ *                 description: JSON stringified array of item objects with `name`, optional `description`, `categoryId`, and optional `isAvailable`.
  *               images:
  *                 type: array
  *                 items:
@@ -122,11 +129,20 @@ router.patch("/:id/toggle", toggleDeletion);
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               categoryId:
+ *                 type: integer
+ *               isAvailable:
+ *                 type: boolean
  *               images:
  *                 type: array
  *                 items:

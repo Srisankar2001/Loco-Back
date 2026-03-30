@@ -16,7 +16,6 @@ import { createReview, deleteReview, getAllReviews, getReviewById, getReviewsByR
  *           schema:
  *             type: object
  *             required:
- *               - rating
  *               - restaurantId
  *               - userId
  *             properties:
@@ -30,6 +29,11 @@ import { createReview, deleteReview, getAllReviews, getReviewById, getReviewsByR
  *                 type: integer
  *               userId:
  *                 type: integer
+ *             anyOf:
+ *               - required:
+ *                   - rating
+ *               - required:
+ *                   - comment
  *     responses:
  *       201:
  *         description: Review created successfully
@@ -113,6 +117,7 @@ router.get('/restaurant/:restaurantId', getReviewsByRestaurantId); //open to all
  *             properties:
  *               reply:
  *                 type: string
+ *                 minLength: 1
  *     responses:
  *       200:
  *         description: Reply added successfully

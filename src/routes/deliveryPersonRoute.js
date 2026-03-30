@@ -20,11 +20,29 @@ const router = express.Router();
  *       - DeliveryPerson
  *     summary: Register Delivery Person
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - firstname
+ *               - lastname
+ *               - email
+ *               - phoneNumber
+ *               - password
  *             properties:
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               password:
+ *                 type: string
  *               userPicture:
  *                 type: string
  *                 format: binary
@@ -57,9 +75,13 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
  *               password:
  *                 type: string
  *     responses:
@@ -94,6 +116,18 @@ router.post("/verify-token/:token", verifyDeliveryPerson);
  *     tags:
  *       - DeliveryPerson
  *     summary: Send Verify Token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Verify token sent
@@ -113,6 +147,17 @@ router.post("/verify", sendVerifyTokenDeliveryPerson);
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Password reset successfully
@@ -126,6 +171,18 @@ router.post("/reset-token/:token", resetPasswordDeliveryPerson);
  *     tags:
  *       - DeliveryPerson
  *     summary: Send Reset Password Token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Reset token sent
@@ -140,6 +197,7 @@ router.post("/reset", sendResetPasswordTokenDeliveryPerson);
  *       - DeliveryPerson
  *     summary: Update Delivery Person Documents
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:

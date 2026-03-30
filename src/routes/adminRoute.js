@@ -16,7 +16,25 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Admin'
+ *             type: object
+ *             required:
+ *               - firstname
+ *               - lastname
+ *               - email
+ *               - phoneNumber
+ *               - password
+ *             properties:
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Admin registered successfully
@@ -42,6 +60,7 @@ router.post('/register', registerAdmin);
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
  *               password:
  *                 type: string
  *     responses:
@@ -78,6 +97,18 @@ router.post('/verify-token/:token', verifyAdmin);
  *     tags:
  *       - Admin
  *     summary: Send verify token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Token sent
@@ -97,6 +128,17 @@ router.post('/verify',sendVerifyTokenAdmin)
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Password reset successfully
@@ -110,6 +152,18 @@ router.post('/reset-token/:token', resetPasswordAdmin);
  *     tags:
  *       - Admin
  *     summary: Send password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Reset token sent
@@ -142,6 +196,17 @@ router.get('/admin',adminAuth,getAllAdmin)
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isActive
+ *             properties:
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Status updated
@@ -174,6 +239,17 @@ router.get('/user',adminAuth,getAllUser)
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isActive
+ *             properties:
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Status updated
@@ -225,6 +301,17 @@ router.get('/delivery-document/:userId',adminAuth,getDeliveryPersonDocument)
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isActive
+ *             properties:
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Status updated
@@ -276,6 +363,17 @@ router.get('/pickup-document/:userId',adminAuth,getPickupPersonDocument)
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isActive
+ *             properties:
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Status updated
@@ -327,6 +425,17 @@ router.get('/restaurant-document/:userId',adminAuth,getRestaurantDocument)
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isActive
+ *             properties:
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Status updated

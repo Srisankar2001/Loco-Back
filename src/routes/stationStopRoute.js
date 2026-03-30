@@ -21,6 +21,34 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - scheduleId
+ *               - stops
+ *             properties:
+ *               scheduleId:
+ *                 type: integer
+ *               stops:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - stationId
+ *                     - stopOrder
+ *                     - arrivalTime
+ *                     - departureTime
+ *                   properties:
+ *                     stationId:
+ *                       type: integer
+ *                     stopOrder:
+ *                       type: integer
+ *                     arrivalTime:
+ *                       type: string
+ *                     arrivalDayOffset:
+ *                       type: integer
+ *                     departureTime:
+ *                       type: string
+ *                     departureDayOffset:
+ *                       type: integer
  *     responses:
  *       201:
  *         description: Station stops created
@@ -40,6 +68,31 @@ router.post("/create", createStationStops);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - scheduleId
+ *               - stops
+ *             properties:
+ *               scheduleId:
+ *                 type: integer
+ *               stops:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id
+ *                     - arrivalTime
+ *                     - departureTime
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     arrivalTime:
+ *                       type: string
+ *                     arrivalDayOffset:
+ *                       type: integer
+ *                     departureTime:
+ *                       type: string
+ *                     departureDayOffset:
+ *                       type: integer
  *     responses:
  *       200:
  *         description: Updated successfully
