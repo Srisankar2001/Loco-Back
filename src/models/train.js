@@ -14,7 +14,11 @@ const Train = db.define('Train', {
   name: {
     type: DataTypes.STRING,
     allowNull: false
-  }
+  },
+  pin: {
+  type: DataTypes.STRING,
+  allowNull: false,
+},
 }, {
   tableName: 'train',
   timestamps: true

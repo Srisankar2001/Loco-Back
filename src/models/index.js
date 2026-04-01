@@ -20,6 +20,8 @@ import itemCategory from "./itemCategory.js";
 import PickupPersonDocument from "./pickupPersonDocument.js";
 import DeliveryPersonDocument from "./deliveryPersonDocument.js";
 import RestaurantDocument from "./restaurantDocument.js";
+import TrainLocation from "./trainLocation.js";
+import PickupPersonLocation from "./pickupPersonLocation.js";
 
 Admin.hasMany(User, { foreignKey: "adminId" });
 User.belongsTo(Admin, { foreignKey: "adminId" });
@@ -114,6 +116,12 @@ Item.hasMany(OrderItem, { foreignKey: "itemId", as: "orderItems" });
 Restaurant.hasMany(Item, { foreignKey: "restaurantId" });
 Item.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 
+Schedule.hasOne(TrainLocation, { foreignKey: "scheduleId" });
+TrainLocation.belongsTo(Schedule, { foreignKey: "scheduleId" });
+
+PickupPerson.hasOne(PickupPersonLocation, { foreignKey: "pickupPersonId" });
+PickupPersonLocation.belongsTo(PickupPerson, { foreignKey: "pickupPersonId" });
+
 export default {
   Admin,
   User,
@@ -137,4 +145,6 @@ export default {
   Payment,
   defaultItem,
   itemCategory,
+  TrainLocation,
+  PickupPersonLocation
 };
