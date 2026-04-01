@@ -22,14 +22,14 @@ const defaultItem = db.define('defaultItem', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  categoryId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "itemCategory", // tableName
-        key: "id",
-      },
-    },
+  // categoryId: {
+  //     type: DataTypes.INTEGER,
+  //     allowNull: false,
+  //     references: {
+  //       model: "itemCategory", // tableName
+  //       key: "id",
+  //     },
+  //   },
 
   isAvailable: {
     type: DataTypes.BOOLEAN,

@@ -35,9 +35,6 @@ DeliveryPerson.belongsTo(Admin, { foreignKey: "adminId" });
 Admin.hasMany(Restaurant, { foreignKey: "adminId" });
 Restaurant.belongsTo(Admin, { foreignKey: "adminId" });
 
-Restaurant.hasMany(Item, { foreignKey: "restaurantId" });
-Item.belongsTo(Restaurant, { foreignKey: "restaurantId" });
-
 User.hasMany(Review, { foreignKey: "userId" });
 Review.belongsTo(User, { foreignKey: "userId" });
 
@@ -82,6 +79,9 @@ StationStop.belongsTo(Schedule, { foreignKey: "scheduleId", as: "schedule" });
 itemCategory.hasMany(defaultItem, { foreignKey: "categoryId" });
 defaultItem.belongsTo(itemCategory, { foreignKey: "categoryId" });
 
+itemCategory.hasMany(Item, { foreignKey: "categoryId" });
+Item.belongsTo(itemCategory, { foreignKey: "categoryId" });
+
 // User
 User.hasMany(Order, { foreignKey: "userId", as: "orders" });
 Order.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -121,6 +121,15 @@ TrainLocation.belongsTo(Schedule, { foreignKey: "scheduleId" });
 
 PickupPerson.hasOne(PickupPersonLocation, { foreignKey: "pickupPersonId" });
 PickupPersonLocation.belongsTo(PickupPerson, { foreignKey: "pickupPersonId" });
+
+PickupPerson.hasOne(PickupPersonDocument, { foreignKey: "pickupPersonId" });
+PickupPersonDocument.belongsTo(PickupPerson, { foreignKey: "pickupPersonId" });
+
+DeliveryPerson.hasOne(DeliveryPersonDocument, { foreignKey: "deliveryPersonId" });
+DeliveryPersonDocument.belongsTo(DeliveryPerson, { foreignKey: "deliveryPersonId" });
+
+Restaurant.hasOne(RestaurantDocument, { foreignKey: "restaurantId" });
+RestaurantDocument.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 
 export default {
   Admin,
