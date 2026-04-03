@@ -10,6 +10,10 @@ const Order = db.define(
       autoIncrement: true,
       primaryKey: true,
     },
+    seatNumber:{
+      type:DataTypes.STRING,
+      allowNull:false
+    },
     total: {
       type: DataTypes.DOUBLE,
       allowNull: false,

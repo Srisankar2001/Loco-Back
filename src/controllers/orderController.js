@@ -20,9 +20,10 @@ const Station = model.Station;
 // User | Create a new order
 export const createOrder = async (req, res) => {
   try {
-    const { userId, trainId, stationId, restaurantId, orderedItems } = req.body;
+    const { seatNumber, userId, trainId, stationId, restaurantId, orderedItems } = req.body;
     // orderItem = [{id,quantity}]
     if (
+      !seatNumber ||
       !userId ||
       !restaurantId ||
       !orderedItems ||
@@ -79,6 +80,7 @@ export const createOrder = async (req, res) => {
     const transaction = await db.transaction();
     const order = await Order.create(
       {
+        seatNumber,
         userId,
         restaurantId,
         trainId,
