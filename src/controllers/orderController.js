@@ -104,7 +104,7 @@ export const createOrder = async (req, res) => {
     }
     await transaction.commit();
 
-    return res.status(201).json(successResponse("Order created successfully."));
+    return res.status(201).json(successResponse("Order created successfully.", { orderId: order.id }));
   } catch (error) {
     return res
       .status(500)
@@ -577,11 +577,10 @@ export const getOrderForUser = async (req, res) => {
     if (!orderId) {
       return res.status(400).json(clientErrorResponse("Order ID is required."));
     }
-    const { userId } = req.body;
+
+    const userId = req.params.userId;
     if (!userId) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("All fields are required."));
+      return res.status(400).json(clientErrorResponse("User ID is required."));
     }
 
     const user = await User.findByPk(userId);

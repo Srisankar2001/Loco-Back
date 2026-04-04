@@ -108,33 +108,27 @@ router.put("/cancel/:orderId", cancelOrder);
 
 /**
  * @openapi
- * /order/user/get/{orderId}:
+ * /order/user/get/{userId}/{orderId}:
  *   get:
  *     tags:
  *       - Orders
  *     summary: Get a single order for a user
  *     parameters:
  *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
  *         name: orderId
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               userId:
- *                 type: integer
  *     responses:
  *       200:
  *         description: Order fetched successfully
  */
-router.get("/user/get/:orderId", getOrderForUser);
+router.get("/user/get/:userId/:orderId", getOrderForUser);
 
 /**
  * @openapi
