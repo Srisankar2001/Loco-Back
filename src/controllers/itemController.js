@@ -6,11 +6,12 @@ import {
 } from "../dto/response.js";
 
 const Item = model.Item;
+const Restaurant = model.Restaurant;
 
 export const createItem = async (req, res) => {
   try {
     const { name, price, description, availability, restaurantId } = req.body;
-const image = req.files?.image?.[0]?.filename;
+    const image = req.files?.image?.[0]?.filename;
 
     if (!name || !price || !description || !restaurantId) {
       return res
@@ -63,7 +64,9 @@ export const updateItem = async (req, res) => {
     }
 
     if (name && item.name !== name) {
-      const existingName = await Item.findOne({ where: { name, restaurantId } });
+      const existingName = await Item.findOne({
+        where: { name, restaurantId },
+      });
       if (existingName) {
         return res
           .status(400)
@@ -72,9 +75,11 @@ export const updateItem = async (req, res) => {
       item.name = name;
     }
 
-     if (price && item.price !== price) item.price = price;
-    if (description && item.description !== description) item.description = description;
-    if (availability !== undefined && item.availability !== availability) item.availability = availability;
+    if (price && item.price !== price) item.price = price;
+    if (description && item.description !== description)
+      item.description = description;
+    if (availability !== undefined && item.availability !== availability)
+      item.availability = availability;
 
     await item.save();
 
@@ -89,13 +94,13 @@ export const updateItem = async (req, res) => {
 export const deleteItem = async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const {  restaurantId } = req.body;
+    const { restaurantId } = req.body;
 
     if (!itemId) {
       return res.status(400).json(clientErrorResponse("Item ID is required."));
     }
 
-     const item = await Item.findOne({ where: { id: itemId, restaurantId } });
+    const item = await Item.findOne({ where: { id: itemId, restaurantId } });
     if (!item) {
       return res.status(400).json(clientErrorResponse("Item not found."));
     }
@@ -113,7 +118,7 @@ export const deleteItem = async (req, res) => {
 export const getItem = async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const {  restaurantId } = req.body;
+    const { restaurantId } = req.body;
 
     if (!itemId) {
       return res.status(400).json(clientErrorResponse("Item ID is required."));
@@ -134,11 +139,36 @@ export const getItem = async (req, res) => {
   }
 };
 
-export const getAllItems = async (req, res) => {
+export const getAllItemsByRestaurantId = async (req, res) => {
   try {
-    const {  restaurantId } = req.body;
+    const restaurantId = req.params.restaurantId;
 
     const items = await Item.findAll({ where: { restaurantId } });
+
+    return res
+      .status(200)
+      .json(successResponse("Items retrieved successfully.", items));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
+
+export const getAllItemsWithRestaurant = async (req, res) => {
+  try {
+
+    const items = await Item.findAll({
+      include: [
+        {
+          model: Restaurant,
+          where: {
+            isActive: true,
+          },
+          attributes: ["id", "name", "address", "image"],
+        },
+      ],
+    });
 
     return res
       .status(200)
