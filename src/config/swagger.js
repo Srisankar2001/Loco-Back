@@ -164,16 +164,17 @@ const options = {
                 },
             },
             securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
+                tokenAuth: {
+                    type: 'apiKey',
+                    in: 'header',
+                    name: 'Authorization',
+                    description: 'Enter only the raw token value. Do not prefix it with Bearer.',
                 },
             },
         },
         security: [
             {
-                bearerAuth: [],
+                tokenAuth: [],
             },
         ],
     },

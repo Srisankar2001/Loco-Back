@@ -11,6 +11,9 @@ const Route = model.Route;
 const Schedule = model.Schedule;
 const StationStop = model.StationStop;
 
+const normalizeDays = (days) =>
+  [...new Set(days.map((d) => String(d).trim().toUpperCase()))];
+
 export const createSchedule = async (req, res) => {
   try {
     const { trainId, routeId, day, dayOffset } = req.body;
@@ -28,8 +31,7 @@ export const createSchedule = async (req, res) => {
     }
 
     const allowedDays = Object.values(DAY);
-
-    const uniqueDays = [...new Set(day)];
+    const uniqueDays = normalizeDays(day);
 
     for (const d of uniqueDays) {
       if (!allowedDays.includes(d)) {
@@ -128,7 +130,7 @@ export const updateSchedule = async (req, res) => {
       }
 
       const allowedDays = Object.values(DAY);
-      const uniqueDays = [...new Set(day)];
+      const uniqueDays = normalizeDays(day);
 
       for (const d of uniqueDays) {
         if (!allowedDays.includes(d)) {

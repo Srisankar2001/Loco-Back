@@ -16,6 +16,7 @@ const router = express.Router();
  *     summary: Map stations to a line
  *     requestBody:
  *       required: true
+ *       description: Payload for assigning ordered stations to a line.
  *       content:
  *         application/json:
  *           schema:
@@ -26,8 +27,11 @@ const router = express.Router();
  *             properties:
  *               lineId:
  *                 type: integer
+ *                 description: ID of the line.
+ *                 example: 1
  *               stations:
  *                 type: array
+ *                 description: Ordered list of stations for the line.
  *                 items:
  *                   type: object
  *                   required:
@@ -36,8 +40,21 @@ const router = express.Router();
  *                   properties:
  *                     stationId:
  *                       type: integer
+ *                       description: ID of the station.
+ *                       example: 10
  *                     lineOrder:
  *                       type: integer
+ *                       description: Sequence of the station in the line.
+ *                       example: 1
+ *           example:
+ *             lineId: 1
+ *             stations:
+ *               - stationId: 10
+ *                 lineOrder: 1
+ *               - stationId: 11
+ *                 lineOrder: 2
+ *               - stationId: 12
+ *                 lineOrder: 3
  *     responses:
  *       201:
  *         description: Line stations created
