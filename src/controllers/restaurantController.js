@@ -23,19 +23,46 @@ const RestaurantDocument = model.RestaurantDocument;
 export const registerRestaurant = async (req, res) => {
   const transaction = await db.transaction();
   try {
-    const { name, address, email, phoneNumber, password, locationLongitude , locationLatitude } = req.body;
+    const rollbackAndRespond = async (status, payload) => {
+      await transaction.rollback();
+      return res.status(status).json(payload);
+    };
+
+    const {
+      name,
+      address,
+      email,
+      phoneNumber,
+      password,
+      locationLongitude,
+      locationLatitude,
+    } = req.body;
     const image = req.files?.image?.[0]?.filename;
     const userPicture = req.files?.userPicture?.[0]?.filename;
     const userDocument = req.files?.userDocument?.[0]?.filename;
     const restaurantDocument = req.files?.restaurantDocument?.[0]?.filename;
-
-    console.log(req.files);
+        console.log(req.files);
     console.log(req.body);
-    
-    if (!name || !address || !email || !phoneNumber || !password || !locationLongitude || !locationLatitude) {
-      return res
-        .status(400)
-        .json(clientErrorResponse("All fields are required."));
+    if (
+      !name ||
+      !address ||
+      !email ||
+      !phoneNumber ||
+      !password ||
+      !locationLongitude ||
+      !locationLatitude
+    ) {
+      return rollbackAndRespond(
+        400,
+        clientErrorResponse("All fields are required."),
+      );
+    }
+
+    if (!image || !userPicture || !userDocument || !restaurantDocument) {
+      return rollbackAndRespond(
+        400,
+        clientErrorResponse("All required files must be uploaded."),
+      );
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -45,9 +72,10 @@ export const registerRestaurant = async (req, res) => {
     });
 
     if (existingRestaurant) {
-      return res
-        .status(409)
-        .json(clientErrorResponse("Email is already registered."));
+      return rollbackAndRespond(
+        409,
+        clientErrorResponse("Email is already registered."),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,24 +91,24 @@ export const registerRestaurant = async (req, res) => {
       email: normalizedEmail,
       phoneNumber,
       password: hashedPassword,
-      locationLatitude:locationLatitude,
-      locationLongitude:locationLongitude,
+      locationLatitude: locationLatitude,
+      locationLongitude: locationLongitude,
       verifyToken,
       verifyTokenExpires: new Date(Date.now() + expiresIn),
       isVerified: false,
       isActive: false,
       status: STATUS.PENDING,
-    },{transaction});
+    }, { transaction });
 
     await RestaurantDocument.create({
       restaurantId: restaurant.id,
-      userPicture: userPicture,
-      userDocument: userDocument,
-      restaurantDocument: restaurantDocument,
-    },{transaction});
+      userPicture,
+      userDocument,
+      restaurantDocument,
+    }, { transaction });
 
-     await transaction.commit(); 
-     
+    await transaction.commit();
+
     sendVerifyMailRestaurant(normalizedEmail, verifyToken);
 
     return res
@@ -92,7 +120,7 @@ export const registerRestaurant = async (req, res) => {
       );
   } catch (error) {
     await transaction.rollback();
-    console.log(error)
+    console.log(error);
     return res
       .status(500)
       .json(serverErrorResponse("Something went wrong. Please try again."));
@@ -102,7 +130,7 @@ export const registerRestaurant = async (req, res) => {
 export const loginRestaurant = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(req.body);
     if (!email || !password) {
       return res
         .status(400)

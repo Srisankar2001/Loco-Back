@@ -5,6 +5,7 @@ import path from "path";
 import {
   createMultipleDefaultItems,
   getDefaultItems,
+  getDefaultItemsByCategory,
   toggleDeletion,
   getDefaultItemById,
   updateDefaultItem,
@@ -75,6 +76,30 @@ router.post("/bulk", upload.array("images"), createMultipleDefaultItems);
  *         description: List of default items
  */
 router.get("/bulk", getDefaultItems);
+
+/**
+ * @openapi
+ * /api/defaultItems/category:
+ *   get:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Get default items by category
+ *     parameters:
+ *       - in: query
+ *         name: categoryId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID used to filter default items
+ *     responses:
+ *       200:
+ *         description: Filtered default items fetched successfully
+ *       400:
+ *         description: Invalid or missing categoryId
+ *       404:
+ *         description: Category not found
+ */
+router.get("/category", getDefaultItemsByCategory);
 
 /**
  * @openapi
