@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import model from "../models/index.js";
 import {
   successResponse,
@@ -7,12 +8,12 @@ import {
 import { TRAIN_TYPE } from "../enum/TrainType.js";
 
 const Train = model.Train;
-const Schedule = model.Schedule
+const Schedule = model.Schedule;
 
 export const createTrain = async (req, res) => {
   try {
-    const { name, type } = req.body;
-    if (!name || !type) {
+    const { name, type, pin } = req.body;
+    if (!name || !type || !pin) {
       return res
         .status(400)
         .json(clientErrorResponse("All fields are required."));
@@ -26,18 +27,13 @@ export const createTrain = async (req, res) => {
     }
 
     const allowedTypes = Object.values(TRAIN_TYPE);
-    
-        if (!allowedTypes.includes(type)) {
-          return res
-            .status(400)
-            .json(clientErrorResponse("Invalid train type."));
-        }
 
-    await Train.create({
-      name,
-      type
-    });
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json(clientErrorResponse("Invalid train type."));
+    }
 
+    const hashedPin = await bcrypt.hash(pin, 10);
+    await Train.create({ name, type, pin: hashedPin });
     return res.status(201).json(successResponse("Train created successfully."));
   } catch (error) {
     return res
@@ -48,14 +44,14 @@ export const createTrain = async (req, res) => {
 
 export const updateTrain = async (req, res) => {
   try {
-    const trainId = req.params.trainId
-    const { name, type } = req.body;
+    const trainId = req.params.trainId;
+    const { name, type, pin } = req.body;
 
     if (!trainId) {
       return res.status(400).json(clientErrorResponse("Train ID is required."));
     }
 
-    if (!name && !type) {
+    if (!name && !type && !pin) {
       return res
         .status(400)
         .json(clientErrorResponse("No data provided for update."));
@@ -77,13 +73,16 @@ export const updateTrain = async (req, res) => {
     }
 
     if (type && train.type !== type) {
-         const allowedTypes = Object.values(TRAIN_TYPE);
-        if (!allowedTypes.includes(type)) {
-          return res
-            .status(400)
-            .json(clientErrorResponse("Invalid type value."));
-        }
-        train.type = type;
+      const allowedTypes = Object.values(TRAIN_TYPE);
+      if (!allowedTypes.includes(type)) {
+        return res.status(400).json(clientErrorResponse("Invalid type value."));
+      }
+      train.type = type;
+    }
+
+    if (pin) {
+      const hashedPin = await bcrypt.hash(pin, 10);
+      train.pin = hashedPin;
     }
 
     await train.save();
@@ -98,14 +97,13 @@ export const updateTrain = async (req, res) => {
 
 export const deleteTrain = async (req, res) => {
   try {
-    const trainId = req.params.trainId
+    const trainId = req.params.trainId;
 
     if (!trainId) {
       return res.status(400).json(clientErrorResponse("Train ID is required."));
     }
 
-
- const train = await Train.findByPk(trainId);
+    const train = await Train.findByPk(trainId);
     if (!train) {
       return res.status(400).json(clientErrorResponse("Train not found."));
     }
@@ -133,14 +131,13 @@ export const deleteTrain = async (req, res) => {
 
 export const getTrain = async (req, res) => {
   try {
-   const trainId = req.params.trainId
+    const trainId = req.params.trainId;
 
     if (!trainId) {
       return res.status(400).json(clientErrorResponse("Train ID is required."));
     }
 
-
- const train = await Train.findByPk(trainId);
+    const train = await Train.findByPk(trainId);
     if (!train) {
       return res.status(400).json(clientErrorResponse("Train not found."));
     }
