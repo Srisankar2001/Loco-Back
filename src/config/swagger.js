@@ -25,10 +25,12 @@ const options = {
             { name: 'TrainLocations', description: 'Train driver login and train live location tracking' },
             { name: 'DefaultItems', description: 'Product catalog management' },
             { name: 'Reviews', description: 'Customer reviews' },
+            { name: 'Search', description: 'Food search endpoints' },
+
         ],
         servers: [
             {
-                url: `http://localhost:${process.env.SERVER_PORT || 3000}`,
+                url: `http://localhost:${process.env.SERVER_PORT || 3001}`,
                 description: 'Development server',
             },
         ],
@@ -165,6 +167,36 @@ const options = {
                         success: { type: 'boolean', example: false },
                         message: { type: 'string' },
                         errors: { type: 'array', items: { type: 'string' } },
+                    },
+                },
+                SearchResult: {
+                    type: 'object',
+                    properties: {
+                        itemId: { type: 'integer' },
+                        itemName: { type: 'string' },
+                        itemImage: { type: 'string' },
+                        itemDescription: { type: 'string' },
+                        itemPrice: { type: 'number', format: 'double' },
+                        categoryId: { type: 'integer' },
+                        categoryName: { type: 'string' },
+                        restaurantId: { type: 'integer' },
+                        restaurantImage: { type: 'string' },
+                        restaurantName: { type: 'string' },
+                        latitude: { type: 'number', format: 'double' },
+                        longitude: { type: 'number', format: 'double' },
+                        distance: { type: 'number', format: 'double' },
+                    },
+                },
+                SearchResponse: {
+                    type: 'object',
+                    properties: {
+                        total: { type: 'integer' },
+                        limit: { type: 'integer' },
+                        offset: { type: 'integer' },
+                        results: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/SearchResult' },
+                        },
                     },
                 },
             },

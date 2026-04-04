@@ -26,6 +26,7 @@ import stationStopRoute from "./src/routes/stationStopRoute.js";
 import trainLocationRoute from "./src/routes/trainLocationRoute.js";
 import pickupLocationRoute from "./src/routes/pickupLocationRoute.js";
 import documentVerificationRoute from "./src/routes/documentVerificationRoute.js";
+import searchRoutes from "./src/routes/searchRoute.js";
 
 dotenv.config();
 
@@ -57,6 +58,7 @@ app.use("/item", itemRoutes);
 app.use("/train-location", trainLocationRoute);
 app.use("/pickup-location", pickupLocationRoute);
 app.use("/doc", documentVerificationRoute);
+app.use("/search", searchRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 /**
