@@ -601,6 +601,7 @@ export const getOrderForUser = async (req, res) => {
         { model: Station, as: "station" },
       ],
     });
+    console.log("Fetched order:", order);
     if (!order) {
       return res.status(400).json(clientErrorResponse("Order not found."));
     }
