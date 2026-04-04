@@ -64,11 +64,12 @@ app.use("/api/reviews", reviewRoutes);
 /**
  * @openapi
  * /health:
- * get:
- * description: Responds if the app is up and running
- * responses:
- * 200:
- * description: App is up and running
+ *   get:
+ *     summary: Health check
+ *     description: Responds if the app is up and running.
+ *     responses:
+ *       200:
+ *         description: App is up and running
  */
 app.get("/health", (req, res) => res.status(200).send("Up and running"));
 

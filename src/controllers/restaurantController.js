@@ -29,6 +29,9 @@ export const registerRestaurant = async (req, res) => {
     const userDocument = req.files?.userDocument?.[0]?.filename;
     const restaurantDocument = req.files?.restaurantDocument?.[0]?.filename;
 
+    console.log(req.files);
+    console.log(req.body);
+    
     if (!name || !address || !email || !phoneNumber || !password || !locationLongitude || !locationLatitude) {
       return res
         .status(400)

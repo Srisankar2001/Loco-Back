@@ -11,17 +11,23 @@ const options = {
                 name: 'API Support',
             },
         },
-            tags: [
-                { name: 'Admins', description: 'Admin management' },
-                { name: 'Users', description: 'User management' },
-                { name: 'Restaurants', description: 'Restaurant management' },
-                { name: 'DeliveryPersons', description: 'Delivery person management' },
-                { name: 'PickupPersons', description: 'Pickup person management' },
-                { name: 'ItemCategories', description: 'Product category management' },
-                { name: 'DefaultItems', description: 'Product catalog management' },
-                { name: 'Reviews', description: 'Customer reviews' },
-                { name: 'Search', description: 'Food search endpoints' },
-            ],
+        tags: [
+            { name: 'Admins', description: 'Admin management' },
+            { name: 'Users', description: 'User management' },
+            { name: 'Restaurants', description: 'Restaurant management' },
+            { name: 'DeliveryPersons', description: 'Delivery person management' },
+            { name: 'PickupPersons', description: 'Pickup person management' },
+            { name: 'ItemCategories', description: 'Product category management' },
+            { name: 'Items', description: 'Restaurant item management' },
+            { name: 'Orders', description: 'Order lifecycle management' },
+            { name: 'DocumentVerification', description: 'Admin document verification endpoints' },
+            { name: 'PickupLocations', description: 'Pickup person live location tracking' },
+            { name: 'TrainLocations', description: 'Train driver login and train live location tracking' },
+            { name: 'DefaultItems', description: 'Product catalog management' },
+            { name: 'Reviews', description: 'Customer reviews' },
+            { name: 'Search', description: 'Food search endpoints' },
+
+        ],
         servers: [
             {
                 url: `http://localhost:${process.env.SERVER_PORT || 3001}`,
@@ -209,7 +215,7 @@ const options = {
             },
         ],
     },
-    apis: ['./src/routes/*.js', './server.js'], // Path to the API docs
+    apis: ['./src/routes/*.js', './app.js'], // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(options);
