@@ -100,7 +100,7 @@ export const getDefaultItems = async (req, res) => {
 export const getDefaultItemsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.query;
-
+    console.log("Received categoryId:", categoryId);
     if (!categoryId) {
       return res.status(400).json({
         message: "categoryId query parameter is required",
@@ -136,7 +136,7 @@ export const getDefaultItemsByCategory = async (req, res) => {
       },
       order: [["name", "ASC"]],
     });
-
+    console.log("Fetched default items:", items);
     return res.status(200).json({
       message: "Default items fetched successfully",
       data: items,

@@ -84,6 +84,7 @@ router.get("/bulk", getDefaultItems);
  *     tags:
  *       - DefaultItems
  *     summary: Get default items by category
+ *     description: Returns all available default items for a valid and available category.
  *     parameters:
  *       - in: query
  *         name: categoryId
@@ -98,6 +99,10 @@ router.get("/bulk", getDefaultItems);
  *         description: Invalid or missing categoryId
  *       404:
  *         description: Category not found
+ *       409:
+ *         description: Category is not available
+ *       500:
+ *         description: Internal server error
  */
 router.get("/category", getDefaultItemsByCategory);
 
