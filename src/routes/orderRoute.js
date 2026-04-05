@@ -11,6 +11,7 @@ import {
   getAllOrdersForDeliveryPerson,
   getAllOrdersForPickupPerson,
   getAllOrdersForRestaurant,
+  getOrdersForRestaurantByStatus,
   getAllOrdersForUser,
   getOrderForAdmin,
   getOrderForDeliveryPerson,
@@ -291,6 +292,35 @@ router.get("/restaurant/get/:orderId", getOrderForRestaurant);
 
 /**
  * @openapi
+ * /order/restaurant/get-by-status/{restaurantId}/{status}:
+ *   get:
+ *     tags:
+ *       - Orders
+ *     summary: Get restaurant orders filtered by status
+ *     parameters:
+ *       - in: path
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, REJECTED, ACCEPTED, ASSIGNED, PICKEDUP, HANDED_OVER, OUT_FOR_DELIVERY, DELIVERED, CANCELLED]
+ *     responses:
+ *       200:
+ *         description: Orders fetched successfully
+ *       400:
+ *         description: Invalid restaurant ID or order status
+ *       404:
+ *         description: Restaurant not found
+ */
+router.get("/restaurant/get-by-status/:restaurantId/:status", getOrdersForRestaurantByStatus);
+
+/**
+ * @openapi
  * /order/restaurant/get:
  *   get:
  *     tags:
@@ -311,7 +341,7 @@ router.get("/restaurant/get/:orderId", getOrderForRestaurant);
  *       200:
  *         description: Orders fetched successfully
  */
-router.get("/restaurant/get", getAllOrdersForRestaurant);
+router.get("/restaurant/get/:restaurantId", getAllOrdersForRestaurant);
 
 // Pickup Person
 /**
