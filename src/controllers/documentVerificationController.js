@@ -5,6 +5,7 @@ import {
   serverErrorResponse,
 } from "../dto/response.js";
 import { STATUS } from "../enum/Status.js";
+import { assignNearestStation } from "../utils/assignNearestStation.js";
 
 const DeliveryPerson = model.DeliveryPerson;
 const DeliveryPersonDocument = model.DeliveryPersonDocument;
@@ -367,6 +368,7 @@ export const verifyRestaurantDocument = async (req, res) => {
 
     if (allApproved) {
       restaurant.status = STATUS.APPROVED;
+      await assignNearestStation(restaurant);
       await restaurant.save();
       return res
         .status(200)

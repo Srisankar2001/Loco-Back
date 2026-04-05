@@ -19,6 +19,11 @@ const SearchIndex = db.define(
     restaurantImage: DataTypes.STRING,
     latitude: DataTypes.DOUBLE,
     longitude: DataTypes.DOUBLE,
+    stationId: DataTypes.INTEGER,
+    stationName: DataTypes.STRING,
+    trainId: DataTypes.INTEGER,
+    scheduleId: DataTypes.INTEGER,
+    scheduleDay: DataTypes.JSON,
   },
   {
     tableName: "search_index",
@@ -27,7 +32,6 @@ const SearchIndex = db.define(
   },
 );
 
-// Prevent Sequelize from trying to create a backing table for the view.
 SearchIndex.sync = async () => SearchIndex;
 
 export default SearchIndex;

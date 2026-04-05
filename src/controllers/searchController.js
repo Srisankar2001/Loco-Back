@@ -7,105 +7,81 @@ const MAX_LIMIT = 100;
 
 const clampOffset = (value) => {
   const parsed = parseInt(value, 10);
-  if (Number.isFinite(parsed) && parsed >= 0) {
-    return parsed;
-  }
+  if (Number.isFinite(parsed) && parsed >= 0) return parsed;
   return 0;
 };
 
 const clampLimit = (value) => {
   const parsed = parseInt(value, 10);
-  if (Number.isFinite(parsed)) {
-    return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-  }
+  if (Number.isFinite(parsed)) return Math.min(Math.max(parsed, 1), MAX_LIMIT);
   return DEFAULT_LIMIT;
 };
 
-const buildSearchClause = (term) => {
-  if (!term) return null;
-
-  return `
-    (
-      itemName LIKE :likeSearch
-      OR categoryName LIKE :likeSearch
-    )
-  `;
-};
-
 export const searchFood = async (req, res) => {
-  console.log("Search API called with query:", req.query);
   try {
     const searchTerm = (req.query.q ?? "").trim();
-
+    const trainId = req.query.trainId;
+    const stationId = req.query.stationId;
+    const day = req.query.day;
     const limit = clampLimit(req.query.limit);
     const offset = clampOffset(req.query.offset);
 
+    if (!trainId || !stationId || !day) {
+      return res.status(400).json({ message: "trainId, stationId and day are required." });
+    }
+
     const replacements = {
+      trainId,
+      stationId,
+      day: `%${day}%`,
       limit,
       offset,
     };
 
-    const searchClause = buildSearchClause(searchTerm);
-    if (searchClause) {
+    if (searchTerm) {
       replacements.likeSearch = `%${searchTerm}%`;
     }
 
-    const baseWhere = searchClause || "1=1";
-
-    const selectFields = [
-      "itemId",
-      "itemName",
-      "itemImage",
-      "itemDescription",
-      "itemPrice",
-      "categoryId",
-      "categoryName",
-      "restaurantId",
-      "restaurantName",
-      "restaurantImage",
-      "latitude",
-      "longitude",
-    ];
+    const whereClause = `
+      trainId = :trainId
+      AND stationId = :stationId
+      AND scheduleDay LIKE :day
+      ${searchTerm ? 'AND (itemName LIKE :likeSearch OR categoryName LIKE :likeSearch)' : ''}
+    `;
 
     const finalQuery = `
-      SELECT
-        ${selectFields.join(",\n        ")}
+      SELECT DISTINCT
+        itemId, itemName, itemImage, itemDescription, itemPrice,
+        categoryId, categoryName,
+        restaurantId, restaurantName, restaurantImage,
+        latitude, longitude,
+        stationId, stationName,
+        trainId, scheduleId
       FROM search_index
-      WHERE ${baseWhere}
+      WHERE ${whereClause}
       ORDER BY itemName ASC
       LIMIT :limit
-      OFFSET :offset;
+      OFFSET :offset
     `;
 
     const countQuery = `
-      SELECT COUNT(*) AS total
+      SELECT COUNT(DISTINCT itemId) AS total
       FROM search_index
-      WHERE ${baseWhere}
+      WHERE ${whereClause}
     `;
 
-    const items = await db.query(finalQuery, {
-      type: QueryTypes.SELECT,
-      replacements,
-    });
+    const items = await db.query(finalQuery, { type: QueryTypes.SELECT, replacements });
+    const [countResult] = await db.query(countQuery, { type: QueryTypes.SELECT, replacements });
 
-    const [countResult] = await db.query(countQuery, {
-      type: QueryTypes.SELECT,
-      replacements,
-    });
-
-    res.json({
+    return res.json({
       total: Number(countResult?.total ?? 0),
       limit,
       offset,
       results: items,
     });
-    console.log(`Search API returned ${items.length} results (total: ${countResult?.total ?? 0})`);
   } catch (error) {
     console.error("Search API error", error);
-    res.status(500).json({
-      message: "Unable to retrieve search results",
-      detail: error.message,
-    });
+    return res.status(500).json({ message: "Unable to retrieve search results", detail: error.message });
   }
 };
 

@@ -131,6 +131,9 @@ DeliveryPersonDocument.belongsTo(DeliveryPerson, { foreignKey: "deliveryPersonId
 Restaurant.hasOne(RestaurantDocument, { foreignKey: "restaurantId" });
 RestaurantDocument.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 
+Station.hasMany(Restaurant, { foreignKey: "stationId" });
+Restaurant.belongsTo(Station, { foreignKey: "stationId" });
+
 export default {
   Admin,
   User,

@@ -3,7 +3,7 @@ import db from "../config/db.js";
 
 export const SEARCH_INDEX_VIEW_SQL = `
 CREATE OR REPLACE VIEW search_index AS
-SELECT
+SELECT DISTINCT
   i.id AS itemId,
   i.name AS itemName,
   i.image AS itemImage,
@@ -12,15 +12,25 @@ SELECT
   c.id AS categoryId,
   c.name AS categoryName,
   r.id AS restaurantId,
-  r.image AS restaurantImage,
   r.name AS restaurantName,
+  r.image AS restaurantImage,
   CAST(r.locationLatitude AS DECIMAL(11,8)) AS latitude,
-  CAST(r.locationLongitude AS DECIMAL(11,8)) AS longitude
+  CAST(r.locationLongitude AS DECIMAL(11,8)) AS longitude,
+  r.stationId AS stationId,
+  st.name AS stationName,
+  t.id AS trainId,
+  sch.id AS scheduleId,
+  sch.day AS scheduleDay
 FROM item i
-JOIN restaurant r ON r.id = i.restaurantId
 JOIN itemCategory c ON c.id = i.categoryId
+JOIN restaurant r ON r.id = i.restaurantId
+JOIN station st ON st.id = r.stationId
+JOIN station_stop ss ON ss.stationId = st.id
+JOIN schedule sch ON sch.id = ss.scheduleId
+JOIN train t ON t.id = sch.trainId
 WHERE c.isAvailable = 1
   AND r.isActive = 1
+  AND r.status = 'APPROVED'
   AND i.availability = 1;
 `;
 
