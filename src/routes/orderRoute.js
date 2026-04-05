@@ -138,17 +138,12 @@ router.get("/user/get/:userId/:orderId", getOrderForUser);
  *     tags:
  *       - Orders
  *     summary: Get all orders for a user
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               userId:
- *                 type: integer
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Orders fetched successfully
@@ -182,17 +177,12 @@ router.get("/admin/get/:orderId", getOrderForAdmin);
  *     tags:
  *       - Orders
  *     summary: Get all orders for admin
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - adminId
- *             properties:
- *               adminId:
- *                 type: integer
+ *     parameters:
+ *       - in: query
+ *         name: adminId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Orders fetched successfully
@@ -273,17 +263,11 @@ router.put("/accept/:orderId", acceptOrder);
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - restaurantId
- *             properties:
- *               restaurantId:
- *                 type: integer
+ *       - in: query
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Order fetched successfully
@@ -326,17 +310,12 @@ router.get("/restaurant/get-by-status/:restaurantId/:status", getOrdersForRestau
  *     tags:
  *       - Orders
  *     summary: Get all orders for a restaurant
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - restaurantId
- *             properties:
- *               restaurantId:
- *                 type: integer
+ *     parameters:
+ *       - in: query
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Orders fetched successfully
@@ -489,17 +468,11 @@ router.put("/pickup-cancel", cancelOrderByPickupPerson);
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - pickupPersonId
- *             properties:
- *               pickupPersonId:
- *                 type: integer
+ *       - in: query
+ *         name: pickupPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Order fetched successfully
@@ -513,17 +486,12 @@ router.get("/pickup/get/:orderId", getOrderForPickupPerson);
  *     tags:
  *       - Orders
  *     summary: Get all orders for a pickup person
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - pickupPersonId
- *             properties:
- *               pickupPersonId:
- *                 type: integer
+ *     parameters:
+ *       - in: query
+ *         name: pickupPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Orders fetched successfully
@@ -604,17 +572,11 @@ router.put("/delivery/:orderId", deliveryOrder);
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - deliveryPersonId
- *             properties:
- *               deliveryPersonId:
- *                 type: integer
+ *       - in: query
+ *         name: deliveryPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Order fetched successfully
@@ -628,17 +590,12 @@ router.get("/delivery/get/:orderId", getOrderForDeliveryPerson);
  *     tags:
  *       - Orders
  *     summary: Get all orders for a delivery person
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - deliveryPersonId
- *             properties:
- *               deliveryPersonId:
- *                 type: integer
+ *     parameters:
+ *       - in: query
+ *         name: deliveryPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Orders fetched successfully
