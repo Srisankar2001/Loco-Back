@@ -20,7 +20,14 @@ const Station = model.Station;
 // User | Create a new order
 export const createOrder = async (req, res) => {
   try {
-    const { seatNumber, userId, trainId, stationId, restaurantId, orderedItems } = req.body;
+    const {
+      seatNumber,
+      userId,
+      trainId,
+      stationId,
+      restaurantId,
+      orderedItems,
+    } = req.body;
     // orderItem = [{id,quantity}]
     if (
       !seatNumber ||
@@ -136,8 +143,10 @@ export const cancelOrder = async (req, res) => {
       return res.status(400).json(clientErrorResponse("Order not found."));
     }
 
-     if (order.status !== ORDER_STATUS.PENDING) {
-      return res.status(400).json(clientErrorResponse("Order can only be cancelled when pending."));
+    if (order.status !== ORDER_STATUS.PENDING) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Order can only be cancelled when pending."));
     }
 
     order.cancelledAt = new Date();
@@ -216,10 +225,12 @@ export const acceptOrder = async (req, res) => {
       return res.status(400).json(clientErrorResponse("Order not found."));
     }
 
-     if (order.status !== ORDER_STATUS.PENDING) {
-      return res.status(400).json(clientErrorResponse("Order can only be accepted when pending."));
+    if (order.status !== ORDER_STATUS.PENDING) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Order can only be accepted when pending."));
     }
-    
+
     order.acceptedAt = new Date();
     order.status = ORDER_STATUS.ACCEPTED;
     await order.save();
@@ -239,12 +250,16 @@ export const claimOrder = async (req, res) => {
   try {
     const { pickupPersonId, restaurantId, trainId, stationId } = req.body;
     if (!pickupPersonId || !restaurantId || !trainId || !stationId) {
-      return res.status(400).json(clientErrorResponse("All fields are required."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("All fields are required."));
     }
 
     const pickupPerson = await PickupPerson.findByPk(pickupPersonId);
     if (!pickupPerson) {
-      return res.status(400).json(clientErrorResponse("Pickup person not found."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("Pickup person not found."));
     }
 
     const restaurant = await Restaurant.findByPk(restaurantId);
@@ -263,29 +278,60 @@ export const claimOrder = async (req, res) => {
     }
 
     const orders = await Order.findAll({
-      where: { restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED },
+      where: {
+        restaurantId,
+        trainId,
+        stationId,
+        status: ORDER_STATUS.ACCEPTED,
+      },
     });
 
     if (orders.length === 0) {
-      return res.status(400).json(clientErrorResponse("No accepted orders found for this restaurant, train and station."));
+      return res
+        .status(400)
+        .json(
+          clientErrorResponse(
+            "No accepted orders found for this restaurant, train and station.",
+          ),
+        );
     }
 
     // Check if already claimed by another pickup person
-    const alreadyClaimed = orders.some(order => order.pickupPersonId !== null);
+    const alreadyClaimed = orders.some(
+      (order) => order.pickupPersonId !== null,
+    );
     if (alreadyClaimed) {
-      return res.status(400).json(clientErrorResponse("Orders already claimed by another pickup person."));
+      return res
+        .status(400)
+        .json(
+          clientErrorResponse(
+            "Orders already claimed by another pickup person.",
+          ),
+        );
     }
 
     const transaction = await db.transaction();
     await Order.update(
       { pickupPersonId, assignedAt: new Date(), status: ORDER_STATUS.ASSIGNED },
-      { where: { restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED }, transaction },
+      {
+        where: {
+          restaurantId,
+          trainId,
+          stationId,
+          status: ORDER_STATUS.ACCEPTED,
+        },
+        transaction,
+      },
     );
     await transaction.commit();
 
-    return res.status(200).json(successResponse("Orders claimed successfully."));
+    return res
+      .status(200)
+      .json(successResponse("Orders claimed successfully."));
   } catch (error) {
-    return res.status(500).json(serverErrorResponse("Something went wrong. Please try again."));
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
@@ -444,12 +490,16 @@ export const handoverOrder = async (req, res) => {
   try {
     const { pickupPersonId, restaurantId, trainId, stationId } = req.body;
     if (!pickupPersonId || !restaurantId || !trainId || !stationId) {
-      return res.status(400).json(clientErrorResponse("All fields are required."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("All fields are required."));
     }
 
     const pickupPerson = await PickupPerson.findByPk(pickupPersonId);
     if (!pickupPerson) {
-      return res.status(400).json(clientErrorResponse("Pickup person not found."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("Pickup person not found."));
     }
 
     const restaurant = await Restaurant.findByPk(restaurantId);
@@ -468,22 +518,43 @@ export const handoverOrder = async (req, res) => {
     }
 
     const orders = await Order.findAll({
-      where: { pickupPersonId, restaurantId, trainId, stationId, status: ORDER_STATUS.PICKEDUP },
+      where: {
+        pickupPersonId,
+        restaurantId,
+        trainId,
+        stationId,
+        status: ORDER_STATUS.PICKEDUP,
+      },
     });
     if (orders.length === 0) {
-      return res.status(400).json(clientErrorResponse("No pickedup orders found to hand over."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("No pickedup orders found to hand over."));
     }
 
     const transaction = await db.transaction();
     await Order.update(
       { handedOverAt: new Date(), status: ORDER_STATUS.HANDED_OVER },
-      { where: { pickupPersonId, restaurantId, trainId, stationId, status: ORDER_STATUS.PICKEDUP }, transaction },
+      {
+        where: {
+          pickupPersonId,
+          restaurantId,
+          trainId,
+          stationId,
+          status: ORDER_STATUS.PICKEDUP,
+        },
+        transaction,
+      },
     );
     await transaction.commit();
 
-    return res.status(200).json(successResponse("Orders handed over successfully."));
+    return res
+      .status(200)
+      .json(successResponse("Orders handed over successfully."));
   } catch (error) {
-    return res.status(500).json(serverErrorResponse("Something went wrong. Please try again."));
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
@@ -492,12 +563,16 @@ export const claimDeliveryOrder = async (req, res) => {
   try {
     const { deliveryPersonId, trainId, stationId } = req.body;
     if (!deliveryPersonId || !trainId || !stationId) {
-      return res.status(400).json(clientErrorResponse("All fields are required."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("All fields are required."));
     }
 
     const deliveryPerson = await DeliveryPerson.findByPk(deliveryPersonId);
     if (!deliveryPerson) {
-      return res.status(400).json(clientErrorResponse("Delivery person not found."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("Delivery person not found."));
     }
 
     const train = await Train.findByPk(trainId);
@@ -514,24 +589,49 @@ export const claimDeliveryOrder = async (req, res) => {
       where: { trainId, stationId, status: ORDER_STATUS.HANDED_OVER },
     });
     if (orders.length === 0) {
-      return res.status(400).json(clientErrorResponse("No handed over orders found for this train and station."));
+      return res
+        .status(400)
+        .json(
+          clientErrorResponse(
+            "No handed over orders found for this train and station.",
+          ),
+        );
     }
 
-    const alreadyClaimed = orders.some(order => order.deliveryPersonId !== null);
+    const alreadyClaimed = orders.some(
+      (order) => order.deliveryPersonId !== null,
+    );
     if (alreadyClaimed) {
-      return res.status(400).json(clientErrorResponse("Orders already claimed by another delivery person."));
+      return res
+        .status(400)
+        .json(
+          clientErrorResponse(
+            "Orders already claimed by another delivery person.",
+          ),
+        );
     }
 
     const transaction = await db.transaction();
     await Order.update(
-      { deliveryPersonId, outForDeliveryAt: new Date(), status: ORDER_STATUS.OUT_FOR_DELIVERY },
-      { where: { trainId, stationId, status: ORDER_STATUS.HANDED_OVER }, transaction },
+      {
+        deliveryPersonId,
+        outForDeliveryAt: new Date(),
+        status: ORDER_STATUS.OUT_FOR_DELIVERY,
+      },
+      {
+        where: { trainId, stationId, status: ORDER_STATUS.HANDED_OVER },
+        transaction,
+      },
     );
     await transaction.commit();
 
-    return res.status(200).json(successResponse("Orders claimed successfully."));
+    return res
+      .status(200)
+      .json(successResponse("Orders claimed successfully."));
   } catch (error) {
-    return res.status(500).json(serverErrorResponse("Something went wrong. Please try again."));
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
@@ -545,16 +645,24 @@ export const deliveryOrder = async (req, res) => {
 
     const { deliveryPersonId } = req.body;
     if (!deliveryPersonId) {
-      return res.status(400).json(clientErrorResponse("All fields are required."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("All fields are required."));
     }
 
     const deliveryPerson = await DeliveryPerson.findByPk(deliveryPersonId);
     if (!deliveryPerson) {
-      return res.status(400).json(clientErrorResponse("Delivery person not found."));
+      return res
+        .status(400)
+        .json(clientErrorResponse("Delivery person not found."));
     }
 
     const order = await Order.findOne({
-      where: { id: orderId, deliveryPersonId, status: ORDER_STATUS.OUT_FOR_DELIVERY },
+      where: {
+        id: orderId,
+        deliveryPersonId,
+        status: ORDER_STATUS.OUT_FOR_DELIVERY,
+      },
     });
     if (!order) {
       return res.status(400).json(clientErrorResponse("Order not found."));
@@ -564,9 +672,13 @@ export const deliveryOrder = async (req, res) => {
     order.status = ORDER_STATUS.DELIVERED;
     await order.save();
 
-    return res.status(200).json(successResponse("Order delivered successfully."));
+    return res
+      .status(200)
+      .json(successResponse("Order delivered successfully."));
   } catch (error) {
-    return res.status(500).json(serverErrorResponse("Something went wrong. Please try again."));
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
 
@@ -619,7 +731,7 @@ export const getOrderForUser = async (req, res) => {
 // User | Get all orders
 export const getAllOrdersForUser = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.params.userId;
     if (!userId) {
       return res
         .status(400)
@@ -691,7 +803,7 @@ export const getOrderForRestaurant = async (req, res) => {
 // Restaurant | Get all orders
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {
-    const { restaurantId } = req.body;
+    const restaurantId = req.params.restaurantId;
     if (!restaurantId) {
       return res
         .status(400)
@@ -766,7 +878,7 @@ export const getOrderForPickupPerson = async (req, res) => {
 // Pickup Person | Get all orders
 export const getAllOrdersForPickupPerson = async (req, res) => {
   try {
-    const { pickupPersonId } = req.body;
+    const pickupPersonId = req.params.pickupPersonId;
     if (!pickupPersonId) {
       return res
         .status(400)
@@ -843,7 +955,7 @@ export const getOrderForDeliveryPerson = async (req, res) => {
 // Delivery Person | Get all orders
 export const getAllOrdersForDeliveryPerson = async (req, res) => {
   try {
-    const { deliveryPersonId } = req.body;
+    const deliveryPersonId = req.params.deliveryPersonId;
     if (!deliveryPersonId) {
       return res
         .status(400)
