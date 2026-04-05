@@ -599,6 +599,9 @@ export const getOrderForUser = async (req, res) => {
         { model: Restaurant, as: "restaurant" },
         { model: Train, as: "train" },
         { model: Station, as: "station" },
+        { model: User, as: "user" },
+                { model: PickupPerson, as: "pickupPerson" },
+                { model: DeliveryPerson, as: "deliveryPerson" },
       ],
     });
     if (!order) {
@@ -618,7 +621,7 @@ export const getOrderForUser = async (req, res) => {
 // User | Get all orders
 export const getAllOrdersForUser = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
     if (!userId) {
       return res
         .status(400)
@@ -630,7 +633,22 @@ export const getAllOrdersForUser = async (req, res) => {
       return res.status(400).json(clientErrorResponse("User not found."));
     }
 
-    const orders = await Order.findAll({ where: { userId } });
+    const orders = await Order.findAll({ 
+      where: { userId },
+      include: [
+        {
+          model: OrderItem,
+          as: "items",
+          include: [{ model: Item, as: "item" }],
+        },
+        { model: Restaurant, as: "restaurant" },
+        { model: Train, as: "train" },
+        { model: Station, as: "station" },
+        { model: User, as: "user" },
+                { model: PickupPerson, as: "pickupPerson" },
+                { model: DeliveryPerson, as: "deliveryPerson" },
+      ],
+     });
 
     return res
       .status(200)
@@ -649,7 +667,7 @@ export const getOrderForRestaurant = async (req, res) => {
     if (!orderId) {
       return res.status(400).json(clientErrorResponse("Order ID is required."));
     }
-    const { restaurantId } = req.body;
+    const { restaurantId } = req.query;
     if (!restaurantId) {
       return res
         .status(400)
@@ -690,7 +708,7 @@ export const getOrderForRestaurant = async (req, res) => {
 // Restaurant | Get all orders
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {
-    const { restaurantId } = req.body;
+    const { restaurantId } = req.query;
     if (!restaurantId) {
       return res
         .status(400)
@@ -721,7 +739,7 @@ export const getOrderForPickupPerson = async (req, res) => {
     if (!orderId) {
       return res.status(400).json(clientErrorResponse("Order ID is required."));
     }
-    const { pickupPersonId } = req.body;
+    const { pickupPersonId } = req.query;
     if (!pickupPersonId) {
       return res
         .status(400)
@@ -765,7 +783,7 @@ export const getOrderForPickupPerson = async (req, res) => {
 // Pickup Person | Get all orders
 export const getAllOrdersForPickupPerson = async (req, res) => {
   try {
-    const { pickupPersonId } = req.body;
+    const { pickupPersonId } = req.query;
     if (!pickupPersonId) {
       return res
         .status(400)
@@ -798,7 +816,7 @@ export const getOrderForDeliveryPerson = async (req, res) => {
     if (!orderId) {
       return res.status(400).json(clientErrorResponse("Order ID is required."));
     }
-    const { deliveryPersonId } = req.body;
+    const { deliveryPersonId } = req.query;
     if (!deliveryPersonId) {
       return res
         .status(400)
@@ -842,7 +860,7 @@ export const getOrderForDeliveryPerson = async (req, res) => {
 // Delivery Person | Get all orders
 export const getAllOrdersForDeliveryPerson = async (req, res) => {
   try {
-    const { deliveryPersonId } = req.body;
+    const { deliveryPersonId } = req.query;
     if (!deliveryPersonId) {
       return res
         .status(400)
