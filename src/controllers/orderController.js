@@ -691,7 +691,7 @@ export const getOrderForRestaurant = async (req, res) => {
 // Restaurant | Get all orders
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {
-    const { restaurantId } = req.body;
+    const { restaurantId } = req.params;
     if (!restaurantId) {
       return res
         .status(400)
@@ -704,6 +704,65 @@ export const getAllOrdersForRestaurant = async (req, res) => {
     }
 
     const orders = await Order.findAll({ where: { restaurantId } });
+
+    return res
+      .status(200)
+      .json(successResponse("Orders fetched successfully.", orders));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
+
+// Restaurant | Get all orders by status
+export const getOrdersForRestaurantByStatus = async (req, res) => {
+  try {
+    const { restaurantId, status } = req.params;
+
+    if (!restaurantId || Number.isNaN(Number(restaurantId))) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Valid restaurant ID is required."));
+    }
+
+    if (!status) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Order status is required."));
+    }
+
+    const normalizedStatus = status.toUpperCase();
+
+    if (!Object.values(ORDER_STATUS).includes(normalizedStatus)) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Invalid order status."));
+    }
+
+    const restaurant = await Restaurant.findByPk(Number(restaurantId));
+    if (!restaurant) {
+      return res.status(404).json(clientErrorResponse("Restaurant not found."));
+    }
+
+    const orders = await Order.findAll({
+      where: {
+        restaurantId: Number(restaurantId),
+        status: normalizedStatus,
+      },
+      include: [
+        {
+          model: OrderItem,
+          as: "items",
+          include: [{ model: Item, as: "item" }],
+        },
+        { model: Restaurant, as: "restaurant" },
+        { model: User, as: "user" },
+        { model: Train, as: "train" },
+        { model: Station, as: "station" },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
 
     return res
       .status(200)
