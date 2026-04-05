@@ -26,6 +26,7 @@ import stationStopRoute from "./src/routes/stationStopRoute.js";
 import trainLocationRoute from "./src/routes/trainLocationRoute.js";
 import pickupLocationRoute from "./src/routes/pickupLocationRoute.js";
 import documentVerificationRoute from "./src/routes/documentVerificationRoute.js";
+import searchRoutes from "./src/routes/searchRoute.js";
 
 dotenv.config();
 
@@ -57,16 +58,18 @@ app.use("/item", itemRoutes);
 app.use("/train-location", trainLocationRoute);
 app.use("/pickup-location", pickupLocationRoute);
 app.use("/doc", documentVerificationRoute);
+app.use("/search", searchRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 /**
  * @openapi
  * /health:
- * get:
- * description: Responds if the app is up and running
- * responses:
- * 200:
- * description: App is up and running
+ *   get:
+ *     summary: Health check
+ *     description: Responds if the app is up and running.
+ *     responses:
+ *       200:
+ *         description: App is up and running
  */
 app.get("/health", (req, res) => res.status(200).send("Up and running"));
 

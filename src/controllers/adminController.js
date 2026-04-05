@@ -28,11 +28,11 @@ export const registerAdmin = async (req, res) => {
     const id = req.id;
     const { firstname, lastname, email, phoneNumber, password } = req.body;
 
-    if (!id) {
-      return res
-        .status(401)
-        .json(clientErrorResponse("Unauthorized. User ID not found."));
-    }
+    // if (!id) {
+    //   return res
+    //     .status(401)
+    //     .json(clientErrorResponse("Unauthorized. User ID not found."));
+    // }
 
     if (!firstname || !lastname || !email || !phoneNumber || !password) {
       return res
@@ -1046,7 +1046,7 @@ export const getAllUser = async (req, res) => {
         "email",
         "phoneNumber",
         "isActive",
-        "status",
+        "isVerified",
       ],
     });
 
@@ -1058,6 +1058,6 @@ export const getAllUser = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json(serverErrorResponse("Failed to retrieve restaurants."));
+      .json(serverErrorResponse("Failed to retrieve users."));
   }
 };

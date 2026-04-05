@@ -16,9 +16,23 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - lineId
+ *               - startStationId
+ *               - endStationId
+ *               - isReverse
  *             properties:
  *               name:
  *                 type: string
+ *               lineId:
+ *                 type: integer
+ *               startStationId:
+ *                 type: integer
+ *               endStationId:
+ *                 type: integer
+ *               isReverse:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Route created successfully
@@ -47,6 +61,14 @@ router.post('/create', createRoute);
  *             properties:
  *               name:
  *                 type: string
+ *               lineId:
+ *                 type: integer
+ *               startStationId:
+ *                 type: integer
+ *               endStationId:
+ *                 type: integer
+ *               isReverse:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Route updated successfully

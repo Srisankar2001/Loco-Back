@@ -15,7 +15,25 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - firstname
+ *               - lastname
+ *               - email
+ *               - phoneNumber
+ *               - password
+ *             properties:
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -43,6 +61,7 @@ router.post('/register', registerUser);
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
  *               password:
  *                 type: string
  *     responses:
@@ -79,6 +98,18 @@ router.post('/verify-token/:token', verifyUser);
  *     tags:
  *       - User
  *     summary: Send verify token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Token sent
@@ -98,6 +129,17 @@ router.post('/verify',sendVerifyTokenUser)
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Password reset successfully
@@ -111,6 +153,18 @@ router.post('/reset-token/:token', resetPasswordUser);
  *     tags:
  *       - User
  *     summary: Send password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Reset token sent

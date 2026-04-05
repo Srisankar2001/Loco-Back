@@ -375,6 +375,9 @@ export const getOrderForUser = async (req, res) => {
         { model: Restaurant, as: "restaurant" },
         { model: Train, as: "train" },
         { model: Station, as: "station" },
+        { model: User, as: "user" },
+        { model: PickupPerson, as: "pickupPerson" },
+        { model: DeliveryPerson, as: "deliveryPerson" },
       ],
     });
     if (!order) {

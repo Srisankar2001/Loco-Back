@@ -5,6 +5,7 @@ import path from "path";
 import {
   createMultipleDefaultItems,
   getDefaultItems,
+  getDefaultItemsByCategory,
   toggleDeletion,
   getDefaultItemById,
   updateDefaultItem,
@@ -40,11 +41,18 @@ const router = express.Router();
  *       - DefaultItems
  *     summary: Create multiple default items
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - items
+ *               - images
  *             properties:
+ *               items:
+ *                 type: string
+ *                 description: JSON stringified array of item objects with `name`, optional `description`, `categoryId`, and optional `isAvailable`.
  *               images:
  *                 type: array
  *                 items:
@@ -68,6 +76,35 @@ router.post("/bulk", upload.array("images"), createMultipleDefaultItems);
  *         description: List of default items
  */
 router.get("/bulk", getDefaultItems);
+
+/**
+ * @openapi
+ * /api/defaultItems/category:
+ *   get:
+ *     tags:
+ *       - DefaultItems
+ *     summary: Get default items by category
+ *     description: Returns all available default items for a valid and available category.
+ *     parameters:
+ *       - in: query
+ *         name: categoryId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID used to filter default items
+ *     responses:
+ *       200:
+ *         description: Filtered default items fetched successfully
+ *       400:
+ *         description: Invalid or missing categoryId
+ *       404:
+ *         description: Category not found
+ *       409:
+ *         description: Category is not available
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/category", getDefaultItemsByCategory);
 
 /**
  * @openapi
@@ -122,11 +159,20 @@ router.patch("/:id/toggle", toggleDeletion);
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               categoryId:
+ *                 type: integer
+ *               isAvailable:
+ *                 type: boolean
  *               images:
  *                 type: array
  *                 items:

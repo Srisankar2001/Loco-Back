@@ -16,9 +16,17 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - startStationId
+ *               - endStationId
  *             properties:
  *               name:
  *                 type: string
+ *               startStationId:
+ *                 type: integer
+ *               endStationId:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Line created successfully
@@ -47,6 +55,10 @@ router.post('/create', createLine);
  *             properties:
  *               name:
  *                 type: string
+ *               startStationId:
+ *                 type: integer
+ *               endStationId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Line updated successfully

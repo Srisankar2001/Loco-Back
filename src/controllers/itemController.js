@@ -10,16 +10,16 @@ const Restaurant = model.Restaurant;
 
 export const createItem = async (req, res) => {
   try {
-    const { name, price, description, availability, restaurantId } = req.body;
+    const { name, price, description, availability, restaurantId, categoryId } = req.body;
     const image = req.files?.image?.[0]?.filename;
 
-    if (!name || !price || !description || !restaurantId) {
+    if (!name || !price || !description || !restaurantId || !categoryId) {
       return res
         .status(400)
         .json(clientErrorResponse("All fields are required."));
     }
 
-    const existingName = await Item.findOne({ where: { name, restaurantId } });
+    const existingName = await Item.findOne({ where: { name, restaurantId, categoryId } });
     if (existingName) {
       return res
         .status(400)
@@ -33,6 +33,7 @@ export const createItem = async (req, res) => {
       description,
       availability: availability ?? false,
       restaurantId,
+      categoryId
     });
 
     return res.status(201).json(successResponse("Item created successfully."));
