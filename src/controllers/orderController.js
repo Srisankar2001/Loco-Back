@@ -237,8 +237,8 @@ export const acceptOrder = async (req, res) => {
 // Pickup Person | Claim all accepted orders for a restaurant, train and station
 export const claimOrder = async (req, res) => {
   try {
-    const { pickupPersonId, restaurantId, trainId, stationId } = req.body;
-    if (!pickupPersonId || !restaurantId || !trainId || !stationId) {
+    const { orderId, pickupPersonId, restaurantId, trainId, stationId } = req.body;
+    if (!orderId || !pickupPersonId || !restaurantId || !trainId || !stationId) {
       return res.status(400).json(clientErrorResponse("All fields are required."));
     }
 
@@ -263,7 +263,7 @@ export const claimOrder = async (req, res) => {
     }
 
     const orders = await Order.findAll({
-      where: { restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED },
+      where: { id: orderId, restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED },
     });
 
     if (orders.length === 0) {
@@ -279,10 +279,10 @@ export const claimOrder = async (req, res) => {
     const transaction = await db.transaction();
     await Order.update(
       { pickupPersonId, assignedAt: new Date(), status: ORDER_STATUS.ASSIGNED },
-      { where: { restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED }, transaction },
+      { where: { id: orderId, restaurantId, trainId, stationId, status: ORDER_STATUS.ACCEPTED }, transaction },
     );
     await transaction.commit();
-
+console.log("Orders claimed successfully.");
     return res.status(200).json(successResponse("Orders claimed successfully."));
   } catch (error) {
     return res.status(500).json(serverErrorResponse("Something went wrong. Please try again."));
@@ -365,8 +365,8 @@ export const cancelOrderByPickupPerson = async (req, res) => {
 // Pickup Person | Pickup all assigned orders for a restaurant, train and station
 export const pickupOrder = async (req, res) => {
   try {
-    const { pickupPersonId, restaurantId, trainId, stationId } = req.body;
-    if (!pickupPersonId || !restaurantId || !trainId || !stationId) {
+    const { orderId, pickupPersonId, restaurantId, trainId, stationId } = req.body;
+    if (!orderId || !pickupPersonId || !restaurantId || !trainId || !stationId) {
       return res
         .status(400)
         .json(clientErrorResponse("All fields are required."));
@@ -396,6 +396,7 @@ export const pickupOrder = async (req, res) => {
 
     const orders = await Order.findAll({
       where: {
+        id: orderId,
         pickupPersonId,
         restaurantId,
         trainId,
@@ -418,6 +419,7 @@ export const pickupOrder = async (req, res) => {
       { pickedupAt: new Date(), status: ORDER_STATUS.PICKEDUP },
       {
         where: {
+          id: orderId,
           pickupPersonId,
           restaurantId,
           trainId,
@@ -994,6 +996,51 @@ export const getAllOrdersForAdmin = async (req, res) => {
     }
 
     const orders = await Order.findAll();
+
+    return res
+      .status(200)
+      .json(successResponse("Orders fetched successfully.", orders));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
+
+// Get all orders by status only
+export const getOrdersByStatus = async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    if (!status) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Order status is required."));
+    }
+
+    const normalizedStatus = status.toUpperCase();
+
+    if (!Object.values(ORDER_STATUS).includes(normalizedStatus)) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Invalid order status."));
+    }
+
+    const orders = await Order.findAll({
+      where: { status: normalizedStatus },
+      include: [
+        {
+          model: OrderItem,
+          as: "items",
+          include: [{ model: Item, as: "item" }],
+        },
+        { model: User, as: "user" },
+        { model: Restaurant, as: "restaurant" },
+        { model: Train, as: "train" },
+        { model: Station, as: "station" },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
 
     return res
       .status(200)

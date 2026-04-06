@@ -508,3 +508,45 @@ export const updateAvailabilityPickupPerson = async (req, res) => {
       .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
+
+export const getPickupPersonById = async (req, res) => {
+  try {
+    const { pickupPersonId } = req.params;
+
+    if (!pickupPersonId || Number.isNaN(Number(pickupPersonId))) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Valid pickup person ID is required."));
+    }
+
+    const pickupPerson = await PickupPerson.findByPk(Number(pickupPersonId), {
+      attributes: [
+        "id",
+        "firstname",
+        "lastname",
+        "email",
+        "phoneNumber",
+        "availability",
+        "isVerified",
+        "isActive",
+        "status",
+        "createdAt",
+        "updatedAt",
+      ],
+    });
+
+    if (!pickupPerson) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Pickup person not found."));
+    }
+
+    return res
+      .status(200)
+      .json(successResponse("Pickup person fetched successfully.", pickupPerson));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};

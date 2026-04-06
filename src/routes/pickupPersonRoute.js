@@ -1,6 +1,7 @@
 import express from "express";
 import { upload } from "../middlewares/multer.js";
 import {
+  getPickupPersonById,
   loginPickupPerson,
   registerPickupPerson,
   resetPasswordPickupPerson,
@@ -200,6 +201,29 @@ router.post("/reset", sendResetPasswordTokenPickupPerson);
 
 /**
  * @openapi
+ * /pickup-person/{pickupPersonId}:
+ *   get:
+ *     tags:
+ *       - PickupPerson
+ *     summary: Get pickup person details by ID
+ *     parameters:
+ *       - in: path
+ *         name: pickupPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pickup person fetched successfully
+ *       400:
+ *         description: Invalid pickup person ID
+ *       404:
+ *         description: Pickup person not found
+ */
+router.get("/:pickupPersonId", getPickupPersonById);
+
+/**
+ * @openapi
  * /pickup-person/update-document:
  *   put:
  *     tags:
@@ -247,8 +271,6 @@ router.put(
  *     tags:
  *       - PickupPerson
  *     summary: Update Pickup Person Availability
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -256,8 +278,12 @@ router.put(
  *           schema:
  *             type: object
  *             required:
+ *               - id
  *               - availability
  *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: Pickup person ID
  *               availability:
  *                 type: integer
  *                 enum:
@@ -267,6 +293,12 @@ router.put(
  *     responses:
  *       200:
  *         description: Availability updated successfully
+ *       400:
+ *         description: Invalid request body or availability already set
+ *       401:
+ *         description: Pickup person ID not provided
+ *       404:
+ *         description: Pickup person not found
  */
 router.put(
   "/availability",
