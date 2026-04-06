@@ -7,6 +7,7 @@ import {
   sendResetPasswordTokenPickupPerson,
   sendVerifyTokenPickupPerson,
   updateDocumentPickupPerson,
+  updateAvailabilityPickupPerson,
   verifyPickupPerson,
 } from "../controllers/pickupPersonController.js";
 import { pickupPersonAuth } from "../middlewares/auth.js";
@@ -237,5 +238,38 @@ router.put(
     { name: "vehicleDocument", maxCount: 1 }
   ]),
   updateDocumentPickupPerson,
+);
+
+/**
+ * @openapi
+ * /pickup-person/availability:
+ *   put:
+ *     tags:
+ *       - PickupPerson
+ *     summary: Update Pickup Person Availability
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - availability
+ *             properties:
+ *               availability:
+ *                 type: integer
+ *                 enum:
+ *                   - 0
+ *                   - 1
+ *                 description: Set to 1 when available, 0 when unavailable
+ *     responses:
+ *       200:
+ *         description: Availability updated successfully
+ */
+router.put(
+  "/availability",
+  updateAvailabilityPickupPerson,
 );
 export default router;
