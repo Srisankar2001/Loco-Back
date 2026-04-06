@@ -37,5 +37,4 @@ export const assignNearestStation = async (restaurant) => {
   if (nearestStation) {
     restaurant.stationId = nearestStation.id;
   }
-  console.log("Assigned station:", nearestStation);
 };

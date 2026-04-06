@@ -10,7 +10,6 @@ import {
   serverErrorResponse,
 } from "../dto/response.js";
 import { isTokenValid } from "../utils/tokenUtil.js";
-import { assignNearestStation } from "../utils/assignNearestStation.js";
 import { ROLE } from "../enum/Role.js";
 import {
   sendResetMailRestaurant,
@@ -242,14 +241,7 @@ export const verifyRestaurant = async (req, res) => {
         .json(clientErrorResponse("Verification token has expired."));
     }
 
-    console.log(
-      restaurant.locationLatitude,
-      restaurant.locationLongitude
-    );
-
-    // ✅ assign nearest station BEFORE saving
-    await assignNearestStation(restaurant);
-
+   
 
     restaurant.verifyToken = null;
     restaurant.verifyTokenExpires = null;
