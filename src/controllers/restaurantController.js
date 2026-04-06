@@ -469,3 +469,45 @@ export const updateDocumentRestaurant = async (req, res) => {
       .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
+
+export const getRestaurantById = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    if (!restaurantId || Number.isNaN(Number(restaurantId))) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Valid restaurant ID is required."));
+    }
+
+    const restaurant = await Restaurant.findByPk(Number(restaurantId), {
+      attributes: [
+        "id",
+        "name",
+        "image",
+        "address",
+        "email",
+        "phoneNumber",
+        "locationLongitude",
+        "locationLatitude",
+        "isVerified",
+        "isActive",
+        "status",
+        "createdAt",
+        "updatedAt",
+      ],
+    });
+
+    if (!restaurant) {
+      return res.status(404).json(clientErrorResponse("Restaurant not found."));
+    }
+
+    return res
+      .status(200)
+      .json(successResponse("Restaurant fetched successfully.", restaurant));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
