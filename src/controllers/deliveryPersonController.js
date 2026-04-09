@@ -426,3 +426,48 @@ export const updateDocumentDeliveryPerson = async (req, res) => {
       .json(serverErrorResponse("Something went wrong. Please try again."));
   }
 };
+
+export const getDeliveryPersonById = async (req, res) => {
+  try {
+    const { deliveryPersonId } = req.params;
+
+    if (!deliveryPersonId || Number.isNaN(Number(deliveryPersonId))) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Valid delivery person ID is required."));
+    }
+
+    const deliveryPerson = await DeliveryPerson.findByPk(
+      Number(deliveryPersonId),
+      {
+        attributes: [
+          "id",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+          "availability",
+          "isVerified",
+          "isActive",
+          "status",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+    );
+
+    if (!deliveryPerson) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Delivery person not found."));
+    }
+
+    return res.status(200).json(
+      successResponse("Delivery person fetched successfully.", deliveryPerson),
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
