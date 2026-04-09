@@ -492,8 +492,8 @@ export const handoverOrder = async (req, res) => {
 // Delivery Person | Claim all handed over orders for a train and station
 export const claimDeliveryOrder = async (req, res) => {
   try {
-    const { deliveryPersonId, trainId, stationId } = req.body;
-    if (!deliveryPersonId || !trainId || !stationId) {
+    const { orderId, deliveryPersonId, trainId, stationId } = req.body;
+    if (!orderId || !deliveryPersonId || !trainId || !stationId) {
       return res.status(400).json(clientErrorResponse("All fields are required."));
     }
 
@@ -513,10 +513,10 @@ export const claimDeliveryOrder = async (req, res) => {
     }
 
     const orders = await Order.findAll({
-      where: { trainId, stationId, status: ORDER_STATUS.HANDED_OVER },
+      where: { id: orderId, trainId, stationId, status: ORDER_STATUS.HANDED_OVER },
     });
     if (orders.length === 0) {
-      return res.status(400).json(clientErrorResponse("No handed over orders found for this train and station."));
+      return res.status(400).json(clientErrorResponse("No handed over order found for this train and station."));
     }
 
     const alreadyClaimed = orders.some(order => order.deliveryPersonId !== null);
@@ -527,7 +527,7 @@ export const claimDeliveryOrder = async (req, res) => {
     const transaction = await db.transaction();
     await Order.update(
       { deliveryPersonId, outForDeliveryAt: new Date(), status: ORDER_STATUS.OUT_FOR_DELIVERY },
-      { where: { trainId, stationId, status: ORDER_STATUS.HANDED_OVER }, transaction },
+      { where: { id: orderId, trainId, stationId, status: ORDER_STATUS.HANDED_OVER }, transaction },
     );
     await transaction.commit();
 
@@ -935,7 +935,19 @@ export const getAllOrdersForDeliveryPerson = async (req, res) => {
         .json(clientErrorResponse("Delivery person not found."));
     }
 
-    const orders = await Order.findAll({ where: { deliveryPersonId } });
+    const orders = await Order.findAll({ where: { deliveryPersonId },
+      include: [
+        {
+          model: OrderItem,
+          as: "items",
+          include: [{ model: Item, as: "item" }],
+        },
+        { model: Restaurant, as: "restaurant" },
+        { model: User, as: "user" },
+        { model: Train, as: "train" },
+        { model: Station, as: "station" },
+      ],
+    });
 
     return res
       .status(200)

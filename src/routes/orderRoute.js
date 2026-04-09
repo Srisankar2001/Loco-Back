@@ -542,10 +542,13 @@ router.get("/pickup/get", getAllOrdersForPickupPerson);
  *           schema:
  *             type: object
  *             required:
+ *               - orderId
  *               - deliveryPersonId
  *               - trainId
  *               - stationId
  *             properties:
+ *               orderId:
+ *                 type: integer
  *               deliveryPersonId:
  *                 type: integer
  *               trainId:
