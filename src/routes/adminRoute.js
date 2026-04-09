@@ -286,7 +286,7 @@ router.get('/delivery-person',adminAuth,getAllDeliveryPerson)
  *       200:
  *         description: Document data
  */
-router.get('/delivery-document/:userId',adminAuth,getDeliveryPersonDocument)
+router.get('/delivery-document/:userId',getDeliveryPersonDocument)
 
 /**
  * @openapi
@@ -316,7 +316,7 @@ router.get('/delivery-document/:userId',adminAuth,getDeliveryPersonDocument)
  *       200:
  *         description: Status updated
  */
-router.put('/delivery-person/:userId',adminAuth,updateDeliveryPersonStatus)
+router.put('/delivery-person/:userId',updateDeliveryPersonStatus)
 
 /**
  * @openapi
@@ -329,7 +329,7 @@ router.put('/delivery-person/:userId',adminAuth,updateDeliveryPersonStatus)
  *       200:
  *         description: List of pickup persons
  */
-router.get('/pickup-person',adminAuth,getAllPickupPerson)
+router.get('/pickup-person',getAllPickupPerson)
 
 /**
  * @openapi
@@ -348,7 +348,7 @@ router.get('/pickup-person',adminAuth,getAllPickupPerson)
  *       200:
  *         description: Document data
  */
-router.get('/pickup-document/:userId',adminAuth,getPickupPersonDocument)
+router.get('/pickup-document/:userId',getPickupPersonDocument)
 
 /**
  * @openapi
