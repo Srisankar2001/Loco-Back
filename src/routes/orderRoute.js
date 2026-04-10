@@ -12,6 +12,7 @@ import {
   getAllOrdersForPickupPerson,
   getAllOrdersForRestaurant,
   getOrdersForRestaurantByStatus,
+  getOrdersByStatus,
   getAllOrdersForUser,
   getOrderForAdmin,
   getOrderForDeliveryPerson,
@@ -189,6 +190,28 @@ router.get("/admin/get/:orderId", getOrderForAdmin);
  */
 router.get("/admin/get", getAllOrdersForAdmin);
 
+/**
+ * @openapi
+ * /order/get-by-status/{status}:
+ *   get:
+ *     tags:
+ *       - Orders
+ *     summary: Get all orders by status only
+ *     parameters:
+ *       - in: path
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, REJECTED, ACCEPTED, ASSIGNED, PICKEDUP, HANDED_OVER, OUT_FOR_DELIVERY, DELIVERED, CANCELLED]
+ *     responses:
+ *       200:
+ *         description: Orders fetched successfully
+ *       400:
+ *         description: Invalid order status
+ */
+router.get("/get-by-status/:status", getOrdersByStatus);
+
 // Restaurant
 /**
  * @openapi
@@ -337,11 +360,14 @@ router.get("/restaurant/get/:restaurantId", getAllOrdersForRestaurant);
  *           schema:
  *             type: object
  *             required:
+ *               - orderId
  *               - pickupPersonId
  *               - restaurantId
  *               - trainId
  *               - stationId
  *             properties:
+ *               orderId:
+ *                 type: integer
  *               pickupPersonId:
  *                 type: integer
  *               restaurantId:
@@ -370,11 +396,14 @@ router.put("/claim-pickup", claimOrder);
  *           schema:
  *             type: object
  *             required:
+ *               - orderId
  *               - pickupPersonId
  *               - restaurantId
  *               - trainId
  *               - stationId
  *             properties:
+ *               orderId:
+ *                 type: integer
  *               pickupPersonId:
  *                 type: integer
  *               restaurantId:
@@ -513,10 +542,13 @@ router.get("/pickup/get", getAllOrdersForPickupPerson);
  *           schema:
  *             type: object
  *             required:
+ *               - orderId
  *               - deliveryPersonId
  *               - trainId
  *               - stationId
  *             properties:
+ *               orderId:
+ *                 type: integer
  *               deliveryPersonId:
  *                 type: integer
  *               trainId:

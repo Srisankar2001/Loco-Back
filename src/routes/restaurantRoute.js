@@ -1,6 +1,7 @@
 import express from "express";
 import { upload } from "../middlewares/multer.js";
 import {
+  getRestaurantById,
   loginRestaurant,
   registerRestaurant,
   resetPasswordRestaurant,
@@ -202,6 +203,29 @@ router.post("/reset-token/:token", resetPasswordRestaurant);
  *         description: Reset token sent
  */
 router.post("/reset", sendResetPasswordTokenRestaurant);
+
+/**
+ * @openapi
+ * /restaurant/{restaurantId}:
+ *   get:
+ *     tags:
+ *       - Restaurant
+ *     summary: Get restaurant details by ID
+ *     parameters:
+ *       - in: path
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Restaurant fetched successfully
+ *       400:
+ *         description: Invalid restaurant ID
+ *       404:
+ *         description: Restaurant not found
+ */
+router.get("/:restaurantId", getRestaurantById);
 
 /**
  * @openapi

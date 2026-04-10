@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getDeliveryPersonById,
   loginDeliveryPerson,
   registerDeliveryPerson,
   resetPasswordDeliveryPerson,
@@ -188,6 +189,29 @@ router.post("/reset-token/:token", resetPasswordDeliveryPerson);
  *         description: Reset token sent
  */
 router.post("/reset", sendResetPasswordTokenDeliveryPerson);
+
+/**
+ * @openapi
+ * /delivery-person/{deliveryPersonId}:
+ *   get:
+ *     tags:
+ *       - DeliveryPerson
+ *     summary: Get delivery person details by ID
+ *     parameters:
+ *       - in: path
+ *         name: deliveryPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Delivery person fetched successfully
+ *       400:
+ *         description: Invalid delivery person ID
+ *       404:
+ *         description: Delivery person not found
+ */
+router.get("/:deliveryPersonId", getDeliveryPersonById);
 
 /**
  * @openapi

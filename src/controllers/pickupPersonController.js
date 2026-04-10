@@ -96,7 +96,7 @@ export const registerPickupPerson = async (req, res) => {
 export const loginPickupPerson = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log("Login attempt for email:", email);
     if (!email || !password) {
       return res
         .status(400)
@@ -114,7 +114,7 @@ export const loginPickupPerson = async (req, res) => {
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
     }
-
+    console.log("Found pickup person record:", pickupPerson.toJSON());
     const isMatch = await bcrypt.compare(password, pickupPerson.password);
 
     if (!isMatch) {
@@ -122,7 +122,7 @@ export const loginPickupPerson = async (req, res) => {
         .status(401)
         .json(clientErrorResponse("Invalid email or password."));
     }
-
+// console.log("Password match successful for email:", email);
     if (!pickupPerson.isVerified) {
       return res
         .status(403)
@@ -130,7 +130,7 @@ export const loginPickupPerson = async (req, res) => {
           clientErrorResponse("Please verify your email before logging in."),
         );
     }
-
+console.log("Pickup person email is verified:", !pickupPerson.isVerified);
     if (pickupPerson.status == STATUS.PENDING) {
       return res
         .status(403)
@@ -166,7 +166,7 @@ export const loginPickupPerson = async (req, res) => {
       process.env.JWT_SECRET_PICKUP_PERSON,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
-
+    console.log("Generated JWT token for pickup person:", token);
     return res.status(200).json(successResponse("Login successful.", token));
   } catch (error) {
     return res
@@ -438,6 +438,112 @@ export const updateDocumentPickupPerson = async (req, res) => {
     return res
       .status(200)
       .json(successResponse("Documents uploaded successfully."));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
+
+export const updateAvailabilityPickupPerson = async (req, res) => {
+  console.log("Received request to update availability for pickup person.");
+  try {
+    const { availability, id } = req.body;
+    console.log("Updating availability for pickup person ID:", id);
+    if (!id) {
+      return res
+        .status(401)
+        .json(clientErrorResponse("Unauthorized. User ID not found."));
+    }
+
+    // const { availability } = req.body;
+    console.log("Received availability value:", availability);
+    if (availability === undefined || availability === null) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Availability is required."));
+    }
+
+    let parsedAvailability = null;
+    if (availability === true || availability === "1" || availability === 1) {
+      parsedAvailability = true;
+    } else if (availability === false || availability === "0" || availability === 0) {
+      parsedAvailability = false;
+    }
+
+    if (parsedAvailability === null) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Availability must be 0 or 1."));
+    }
+
+    const pickupPerson = await PickupPerson.findByPk(id);
+    if (!pickupPerson) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Pickup person not found."));
+    }
+
+    if (pickupPerson.availability === parsedAvailability) {
+      return res
+        .status(400)
+        .json(
+          clientErrorResponse(
+            "Availability already set to the requested value.",
+          ),
+        );
+    }
+
+    pickupPerson.availability = parsedAvailability;
+    await pickupPerson.save();
+
+    return res.status(200).json(
+      successResponse("Availability updated successfully.", {
+        availability: parsedAvailability ? 1 : 0,
+      }),
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(serverErrorResponse("Something went wrong. Please try again."));
+  }
+};
+
+export const getPickupPersonById = async (req, res) => {
+  try {
+    const { pickupPersonId } = req.params;
+
+    if (!pickupPersonId || Number.isNaN(Number(pickupPersonId))) {
+      return res
+        .status(400)
+        .json(clientErrorResponse("Valid pickup person ID is required."));
+    }
+
+    const pickupPerson = await PickupPerson.findByPk(Number(pickupPersonId), {
+      attributes: [
+        "id",
+        "firstname",
+        "lastname",
+        "email",
+        "phoneNumber",
+        "availability",
+        "isVerified",
+        "isActive",
+        "status",
+        "createdAt",
+        "updatedAt",
+      ],
+    });
+
+    if (!pickupPerson) {
+      return res
+        .status(404)
+        .json(clientErrorResponse("Pickup person not found."));
+    }
+
+    return res
+      .status(200)
+      .json(successResponse("Pickup person fetched successfully.", pickupPerson));
   } catch (error) {
     return res
       .status(500)

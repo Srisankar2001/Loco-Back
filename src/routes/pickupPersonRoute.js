@@ -1,12 +1,14 @@
 import express from "express";
 import { upload } from "../middlewares/multer.js";
 import {
+  getPickupPersonById,
   loginPickupPerson,
   registerPickupPerson,
   resetPasswordPickupPerson,
   sendResetPasswordTokenPickupPerson,
   sendVerifyTokenPickupPerson,
   updateDocumentPickupPerson,
+  updateAvailabilityPickupPerson,
   verifyPickupPerson,
 } from "../controllers/pickupPersonController.js";
 import { pickupPersonAuth } from "../middlewares/auth.js";
@@ -199,6 +201,29 @@ router.post("/reset", sendResetPasswordTokenPickupPerson);
 
 /**
  * @openapi
+ * /pickup-person/{pickupPersonId}:
+ *   get:
+ *     tags:
+ *       - PickupPerson
+ *     summary: Get pickup person details by ID
+ *     parameters:
+ *       - in: path
+ *         name: pickupPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pickup person fetched successfully
+ *       400:
+ *         description: Invalid pickup person ID
+ *       404:
+ *         description: Pickup person not found
+ */
+router.get("/:pickupPersonId", getPickupPersonById);
+
+/**
+ * @openapi
  * /pickup-person/update-document:
  *   put:
  *     tags:
@@ -237,5 +262,46 @@ router.put(
     { name: "vehicleDocument", maxCount: 1 }
   ]),
   updateDocumentPickupPerson,
+);
+
+/**
+ * @openapi
+ * /pickup-person/availability:
+ *   put:
+ *     tags:
+ *       - PickupPerson
+ *     summary: Update Pickup Person Availability
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - availability
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: Pickup person ID
+ *               availability:
+ *                 type: integer
+ *                 enum:
+ *                   - 0
+ *                   - 1
+ *                 description: Set to 1 when available, 0 when unavailable
+ *     responses:
+ *       200:
+ *         description: Availability updated successfully
+ *       400:
+ *         description: Invalid request body or availability already set
+ *       401:
+ *         description: Pickup person ID not provided
+ *       404:
+ *         description: Pickup person not found
+ */
+router.put(
+  "/availability",
+  updateAvailabilityPickupPerson,
 );
 export default router;

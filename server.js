@@ -14,7 +14,7 @@ try {
   await db.authenticate();
   console.log("DB Connection : Success");
 
-  await db.sync({ force: false, alter: true });
+  await db.sync({ force: false });
   console.log("Tables are Ready");
 
   await ensureSearchIndexViewAndIndexes();
