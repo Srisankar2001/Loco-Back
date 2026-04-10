@@ -7,7 +7,6 @@ import {
   renameImage,
   cleanupUploadedFiles,
 } from "../utils/imageUtils.js";
-import { CLIENT_RENEG_LIMIT } from "tls";
 
 //Create
 export const createMultipleDefaultItems = async (req, res) => {
@@ -95,6 +94,59 @@ export const getDefaultItems = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const getDefaultItemsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.query;
+    console.log("Received categoryId:", categoryId);
+    if (!categoryId) {
+      return res.status(400).json({
+        message: "categoryId query parameter is required",
+      });
+    }
+
+    const parsedCategoryId = Number(categoryId);
+
+    if (!Number.isInteger(parsedCategoryId) || parsedCategoryId <= 0) {
+      return res.status(400).json({
+        message: "categoryId must be a valid positive integer",
+      });
+    }
+
+    const category = await itemCategory.findByPk(parsedCategoryId);
+
+    if (!category) {
+      return res.status(404).json({
+        message: "Category not found",
+      });
+    }
+
+    if (!category.isAvailable) {
+      return res.status(409).json({
+        message: "Category is not available",
+      });
+    }
+
+    const items = await defaultItem.findAll({
+      where: {
+        categoryId: parsedCategoryId,
+        isAvailable: true,
+      },
+      order: [["name", "ASC"]],
+    });
+    console.log("Fetched default items:", items);
+    return res.status(200).json({
+      message: "Default items fetched successfully",
+      data: items,
+    });
+  } catch (error) {
+    console.error("Error fetching default items by category:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
 

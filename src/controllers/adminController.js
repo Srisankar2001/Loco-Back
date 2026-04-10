@@ -1046,7 +1046,7 @@ export const getAllUser = async (req, res) => {
         "email",
         "phoneNumber",
         "isActive",
-        "status",
+        "isVerified",
       ],
     });
 
@@ -1058,6 +1058,6 @@ export const getAllUser = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json(serverErrorResponse("Failed to retrieve restaurants."));
+      .json(serverErrorResponse("Failed to retrieve users."));
   }
 };
